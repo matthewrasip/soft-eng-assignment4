@@ -67,10 +67,40 @@ public class Person {
             System.out.println("Error updating person: " + e.getMessage());
             return false;
         }
+
+        // Replace the original file with the updated one
+        if (updated) {
+            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+                System.out.println("Could not finalize file update.");
+                return false;
+            }
+        } else {
+            tempFile.delete(); // Cleanup temp if no update occurred
+        }
+
         return updated;
     }
 
-    // Getters and setters (used for tests- Matthew)
+    private int demeritPoints;  // New field
+
+    // Update constructor
+    public Person(String id, String name, int age) {
+        this.id = id;
+        this.name = name;
+        this.age = age;
+        this.demeritPoints = 0;  // default
+    }
+
+    // Optional: add getter/setter
+    public int getDemeritPoints() {
+        return demeritPoints;
+    }
+
+    public void setDemeritPoints(int demeritPoints) {
+        this.demeritPoints = demeritPoints;
+    }
+
+    // Getters and setters (used for tests-Matthew)
     public String getId() { return id; }
     public String getName() { return name; }
     public int getAge() { return age; }
