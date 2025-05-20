@@ -140,7 +140,6 @@ public class Person {
         File tempFile = new File("persons_temp.txt");
 
         boolean found = false;
-        boolean updated = false;
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -287,7 +286,6 @@ public class Person {
                 // Write the updated record
                 writer.write(newId + "," + newFirstName + "," + newLastName + "," + newAddress + "," +
                         newBirthdate + "," + demeritPoints + "," + isSuspended + "\n");
-                updated = true;
             }
 
             if (!found) {
@@ -316,23 +314,79 @@ public class Person {
         System.out.print("Enter person ID: ");
         String personId = scanner.nextLine().trim();
 
+        File inputFile = new File("persons.txt");
+
+        String matchedLine = null;
+
+        // 🔍 Search person by ID BEFORE proceeding
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                if (fields.length == 7 && fields[0].equals(personId)) {
+                    matchedLine = line;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("❌ Error reading file: " + e.getMessage());
+            return;
+        }
+
+        if (matchedLine == null) {
+            System.out.println("❌ Person ID not found.");
+            return;
+        }
+
+        // ✅ Person found — continue
+        String[] fields = matchedLine.split(",");
+        String birthdate = fields[4];
+        int currentPoints = Integer.parseInt(fields[5]);
+        boolean suspended = Boolean.parseBoolean(fields[6]);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birth = LocalDate.parse(birthdate, formatter);
+
         System.out.print("Enter offense date (DD-MM-YYYY): ");
         String offenseDateStr = scanner.nextLine().trim();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
         LocalDate offenseDate;
+
         try {
             offenseDate = LocalDate.parse(offenseDateStr, formatter);
             if (offenseDate.isAfter(LocalDate.now())) {
                 System.out.println("❌ Offense date cannot be in the future.");
                 return;
             }
+            if (offenseDate.isBefore(birth)) {
+                System.out.println("❌ Offense date cannot be before birthdate.");
+                return;
+            }
         } catch (DateTimeParseException e) {
-            System.out.println("❌ Invalid date format.");
+            System.out.println("❌ Invalid offense date format.");
             return;
         }
 
-        File inputFile = new File("persons.txt");
+        System.out.print("Enter number of demerit points (1–6): ");
+        int pointsToAdd;
+        try {
+            pointsToAdd = Integer.parseInt(scanner.nextLine().trim());
+            if (pointsToAdd < 1 || pointsToAdd > 6) {
+                System.out.println("❌ Points must be between 1 and 6.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Invalid number.");
+            return;
+        }
+
+        // Apply suspension logic
+        int updatedPoints = currentPoints + pointsToAdd;
+        long age = ChronoUnit.YEARS.between(birth, LocalDate.now());
+        if ((age < 21 && updatedPoints > 6) || (age >= 21 && updatedPoints > 12)) {
+            suspended = true;
+        }
+
+        // Update file
         File tempFile = new File("persons_temp.txt");
         boolean updated = false;
 
@@ -341,73 +395,30 @@ public class Person {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(",");
-                if (fields.length != 7) {
+                String[] rec = line.split(",");
+                if (rec.length == 7 && rec[0].equals(personId)) {
+                    rec[5] = String.valueOf(updatedPoints);
+                    rec[6] = String.valueOf(suspended);
+                    writer.write(String.join(",", rec) + "\n");
+                    updated = true;
+                } else {
                     writer.write(line + "\n");
-                    continue;
                 }
-
-                if (!fields[0].equals(personId)) {
-                    writer.write(line + "\n");
-                    continue;
-                }
-
-                // Person found
-                String birthdate = fields[4];
-                int currentPoints = Integer.parseInt(fields[5]);
-                boolean suspended = Boolean.parseBoolean(fields[6]);
-
-                LocalDate birth = LocalDate.parse(birthdate, formatter);
-
-                if (offenseDate.isBefore(birth)) {
-                    System.out.println("❌ Offense date cannot be before person's birthdate.");
-                    return;
-                }
-
-                // Age calculated as of today (not offense date)
-                long age = ChronoUnit.YEARS.between(birth, LocalDate.now());
-
-                // Only ask for points after confirming all date-related conditions
-                System.out.print("Enter number of demerit points (1–6): ");
-                int pointsToAdd;
-                try {
-                    pointsToAdd = Integer.parseInt(scanner.nextLine().trim());
-                    if (pointsToAdd < 1 || pointsToAdd > 6) {
-                        System.out.println("❌ Points must be between 1 and 6.");
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.println("❌ Invalid number.");
-                    return;
-                }
-
-                int updatedPoints = currentPoints + pointsToAdd;
-
-                // Suspension rules
-                if (age < 21 && updatedPoints > 6) suspended = true;
-                if (age >= 21 && updatedPoints > 12) suspended = true;
-
-                fields[5] = String.valueOf(updatedPoints);
-                fields[6] = String.valueOf(suspended);
-
-                writer.write(String.join(",", fields) + "\n");
-                updated = true;
             }
 
-        } catch (IOException | NumberFormatException | DateTimeParseException e) {
-            System.out.println("❌ Error: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("❌ Error updating file: " + e.getMessage());
             return;
         }
 
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("❌ Could not finalize file update.");
-                return;
+                System.out.println("❌ Could not finalize update.");
+            } else {
+                System.out.println("✅ Demerit points added successfully.");
             }
-            System.out.println("✅ Demerit points added successfully.");
         } else {
             tempFile.delete();
-            System.out.println("❌ Person ID not found.");
         }
     }
 
