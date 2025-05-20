@@ -1,11 +1,12 @@
 package com.roadregistry;
 
 import java.io.*;
-import java.util.Scanner;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.util.Scanner;
 
 /**
  * Represents a person in the RoadRegistry system.
@@ -130,7 +131,7 @@ public class Person {
      * Updates the personal details (name and age) of a person by ID.
      * Reads from "persons.txt", updates the matching line, and writes it back.
      */
-    public void updatePersonalDetails() {
+    public boolean updatePersonalDetails() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the ID of the person you want to update: ");
         String targetId = scanner.nextLine().trim();
@@ -140,6 +141,8 @@ public class Person {
 
         boolean found = false;
         boolean updated = false;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
              BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
@@ -157,7 +160,6 @@ public class Person {
                     continue;
                 }
 
-                // Person found
                 found = true;
                 System.out.println("✅ Person found. Proceeding to update...");
 
@@ -175,157 +177,140 @@ public class Person {
                 String newAddress = originalAddress;
                 String newBirthdate = originalBirthdate;
 
-                // === Prompt updates ===
-                System.out.print("Enter new ID (or press Enter to keep): ");
-                String input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (isValidId(input)) newId = input;
-                    else {
-                        System.out.println("❌ Invalid ID. Aborting.");
-                        return;
+                // === Calculate age ===
+                LocalDate birth = LocalDate.parse(originalBirthdate, formatter);
+                int age = getAgeFromBirthdate(String.valueOf(birth));
+
+                boolean hasOtherChanges = false;
+                boolean allowBirthdateChange = true;
+
+                // === ID Update (check even digit restriction) ===
+                char firstDigit = originalId.charAt(0);
+                String input;
+                if (Character.isDigit(firstDigit) && (firstDigit - '0') % 2 == 0) {
+                    System.out.println("❌ ID cannot be changed. First digit is even.");
+                } else {
+                    System.out.print("Enter new ID (or press Enter to keep): ");
+                    input = scanner.nextLine().trim();
+
+                    if (!input.isEmpty()) {
+                        if (isValidId(input)) {
+                            newId = input;
+                            hasOtherChanges = true;
+                        } else {
+                            System.out.println("❌ Invalid ID format. Keeping existing ID.");
+                        }
                     }
                 }
 
+                // === First Name ===
                 System.out.print("Enter new first name (or press Enter to keep): ");
                 input = scanner.nextLine().trim();
                 if (!input.isEmpty()) {
-                    if (input.matches("[A-Za-z]+")) newFirstName = input;
-                    else {
-                        System.out.println("❌ Invalid first name. Aborting.");
-                        return;
+                    if (input.matches("[A-Za-z]+")) {
+                        newFirstName = input;
+                        hasOtherChanges = true;
+                    } else {
+                        System.out.println("❌ Invalid first name. Keeping existing.");
                     }
                 }
 
+                // === Last Name ===
                 System.out.print("Enter new last name (or press Enter to keep): ");
                 input = scanner.nextLine().trim();
                 if (!input.isEmpty()) {
-                    if (input.matches("[A-Za-z]+")) newLastName = input;
-                    else {
-                        System.out.println("❌ Invalid last name. Aborting.");
-                        return;
+                    if (input.matches("[A-Za-z]+")) {
+                        newLastName = input;
+                        hasOtherChanges = true;
+                    } else {
+                        System.out.println("❌ Invalid last name. Keeping existing.");
                     }
                 }
 
-                // Address (split parts)
-                String[] addr = originalAddress.split("\\|");
-                String streetNumber = addr[0];
-                String streetName = addr[1];
-                String city = addr[2];
-                String state = addr[3];
-                String country = addr[4];
+                // === Address Update ===
+                if (age < 18) {
+                    System.out.println("ℹ️ Under 18: Address cannot be changed.");
+                    System.out.println("📍 Current Address: " + originalAddress);
+                } else {
+                    String[] addr = originalAddress.split("\\|");
+                    String streetNumber = addr[0], streetName = addr[1], city = addr[2], state = addr[3], country = addr[4];
 
-                System.out.print("Enter new street number (or press Enter to keep): ");
-                input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (input.matches("\\d+")) streetNumber = input;
-                    else {
-                        System.out.println("❌ Invalid street number.");
-                        return;
+                    System.out.print("Enter new street number (or press Enter to keep): ");
+                    input = scanner.nextLine().trim();
+                    if (!input.isEmpty() && input.matches("\\d+")) {
+                        streetNumber = input;
+                        hasOtherChanges = true;
+                    }
+
+                    System.out.print("Enter new street name (or press Enter to keep): ");
+                    input = scanner.nextLine().trim();
+                    if (!input.isEmpty() && input.matches("[A-Za-z ]+")) {
+                        streetName = input;
+                        hasOtherChanges = true;
+                    }
+
+                    System.out.print("Enter new city (or press Enter to keep): ");
+                    input = scanner.nextLine().trim();
+                    if (!input.isEmpty() && input.matches("[A-Za-z ]+")) {
+                        city = input;
+                        hasOtherChanges = true;
+                    }
+
+                    System.out.print("Enter new state (must be Victoria, or press Enter to keep): ");
+                    input = scanner.nextLine().trim();
+                    if (!input.isEmpty() && input.equalsIgnoreCase("Victoria")) {
+                        state = input;
+                        hasOtherChanges = true;
+                    }
+
+                    System.out.print("Enter new country (or press Enter to keep): ");
+                    input = scanner.nextLine().trim();
+                    if (!input.isEmpty() && input.matches("[A-Za-z ]+")) {
+                        country = input;
+                        hasOtherChanges = true;
+                    }
+
+                    newAddress = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
+                }
+
+                // === Birthdate ===
+                if (hasOtherChanges) {
+                    System.out.println("ℹ️ Other details have been changed. Birthdate cannot be updated.");
+                } else {
+                    System.out.print("Enter new birthdate (DD-MM-YYYY) or press Enter to keep: ");
+                    input = scanner.nextLine().trim();
+                    if (!input.isEmpty()) {
+                        if (isValidBirthdate(input)) newBirthdate = input;
+                        else System.out.println("❌ Invalid birthdate format. Keeping existing.");
                     }
                 }
 
-                System.out.print("Enter new street name (or press Enter to keep): ");
-                input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (input.matches("[A-Za-z ]+")) streetName = input;
-                    else {
-                        System.out.println("❌ Invalid street name.");
-                        return;
-                    }
-                }
-
-                System.out.print("Enter new city (or press Enter to keep): ");
-                input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (input.matches("[A-Za-z ]+")) city = input;
-                    else {
-                        System.out.println("❌ Invalid city.");
-                        return;
-                    }
-                }
-
-                System.out.print("Enter new state (must be Victoria): ");
-                input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (input.equalsIgnoreCase("Victoria")) state = input;
-                    else {
-                        System.out.println("❌ State must be Victoria.");
-                        return;
-                    }
-                }
-
-                System.out.print("Enter new country (or press Enter to keep): ");
-                input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (input.matches("[A-Za-z ]+")) country = input;
-                    else {
-                        System.out.println("❌ Invalid country.");
-                        return;
-                    }
-                }
-
-                newAddress = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
-
-                System.out.print("Enter new birthdate (DD-MM-YYYY) or press Enter to keep: ");
-                input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
-                    if (isValidBirthdate(input)) newBirthdate = input;
-                    else {
-                        System.out.println("❌ Invalid birthdate.");
-                        return;
-                    }
-                }
-
-                // === Rule Checks ===
-                int age = getAgeFromBirthdate(originalBirthdate);
-                if (age < 18 && !newAddress.equals(originalAddress)) {
-                    System.out.println("❌ Under 18. Cannot change address.");
-                    return;
-                }
-
-                if (!newBirthdate.equals(originalBirthdate)) {
-                    boolean otherChanged = !newId.equals(originalId) ||
-                            !newFirstName.equals(originalFirstName) ||
-                            !newLastName.equals(originalLastName) ||
-                            !newAddress.equals(originalAddress);
-
-                    if (otherChanged) {
-                        System.out.println("❌ If birthdate is changed, no other field may be changed.");
-                        return;
-                    }
-                }
-
-                char firstChar = originalId.charAt(0);
-                if (Character.isDigit(firstChar) && ((firstChar - '0') % 2 == 0) && !newId.equals(originalId)) {
-                    System.out.println("❌ ID cannot be changed. First digit is even.");
-                    return;
-                }
-
-                // ✅ Write updated line
+                // Write the updated record
                 writer.write(newId + "," + newFirstName + "," + newLastName + "," + newAddress + "," +
                         newBirthdate + "," + demeritPoints + "," + isSuspended + "\n");
                 updated = true;
-
-            } // end while
+            }
 
             if (!found) {
                 System.out.println("❌ Person not found.");
-                return;
+                return false;
             }
 
-        } catch (IOException e) {
-            System.out.println("❌ Error updating file: " + e.getMessage());
-            return;
+        } catch (IOException | DateTimeParseException e) {
+            System.out.println("❌ Error updating person: " + e.getMessage());
+            return false;
         }
 
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
                 System.out.println("❌ Could not finalize update.");
-                return;
+                return false;
             }
             System.out.println("✅ Update successful.");
+            return true;
         } else {
             tempFile.delete();
+            return false;
         }
     }
 
@@ -488,13 +473,15 @@ public class Person {
     }
 
     private int getAgeFromBirthdate(String birthdate) {
-        String[] parts = birthdate.split("-");
-        int birthYear = Integer.parseInt(parts[2]);
-        return 2025 - birthYear;
+        return Period.between(LocalDate.parse(birthdate), LocalDate.now()).getYears();
     }
 
     public int getDemeritPoints() {
         return demeritPoints;
+    }
+
+    public void setDemeritPoints(int demeritPoints) {
+        this.demeritPoints = demeritPoints;
     }
 
     public void setFirstName(String firstName) {
@@ -503,9 +490,5 @@ public class Person {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public void setDemeritPoints(int demeritPoints) {
-        this.demeritPoints = demeritPoints;
     }
 }
