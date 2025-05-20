@@ -1,7 +1,6 @@
 package com.roadregistry;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Represents a person in the RoadRegistry system.
@@ -40,8 +39,35 @@ public class Person {
      * @return true if updated successfully, false if ID not found or error occurred.
      */
     public boolean updatePersonalDetails() {
-        // Implementation will go here
-        return false;
+        File inputFile = new File("persons.txt");
+        File tempFile = new File("persons_temp.txt");
+
+        boolean updated = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                if (fields.length != 3) continue;
+
+                String currentId = fields[0];
+
+                if (currentId.equals(this.id)) {
+                    // Replace the line with updated details
+                    writer.write(id + "," + name + "," + age + "\n");
+                    updated = true;
+                } else {
+                    writer.write(line + "\n");
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error updating person: " + e.getMessage());
+            return false;
+        }
+        return updated;
     }
 
     // Getters and setters (used for tests- Matthew)
