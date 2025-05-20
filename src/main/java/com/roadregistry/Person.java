@@ -44,8 +44,53 @@ public class Person {
         System.out.println("Enter last name:");
         this.lastName = scanner.nextLine();
 
-        System.out.println("Enter address (StreetNo|Street|City|State|Country):");
-        this.address = scanner.nextLine();
+        // Street Number (e.g., 32)
+        String streetNumber;
+        while (true) {
+            System.out.print("Enter street number: ");
+            streetNumber = scanner.nextLine().trim();
+            if (streetNumber.matches("\\d+")) break;
+            System.out.println("❌ Invalid street number. Only digits allowed.");
+        }
+
+        // Street Name (e.g., Highland Street)
+        String streetName;
+        while (true) {
+            System.out.print("Enter street name: ");
+            streetName = scanner.nextLine().trim();
+            if (streetName.matches("[A-Za-z ]+")) break;
+            System.out.println("❌ Invalid street name. Only letters and spaces allowed.");
+        }
+
+        // City (e.g., Melbourne)
+        String city;
+        while (true) {
+            System.out.print("Enter city: ");
+            city = scanner.nextLine().trim();
+            if (city.matches("[A-Za-z ]+")) break;
+            System.out.println("❌ Invalid city. Only letters and spaces allowed.");
+        }
+
+        // State (must be Victoria)
+        String state;
+        while (true) {
+            System.out.print("Enter state (must be Victoria): ");
+            state = scanner.nextLine().trim();
+            if (state.equalsIgnoreCase("Victoria")) break;
+            System.out.println("❌ State must be Victoria.");
+        }
+
+        // Country (e.g., Australia)
+        String country;
+        while (true) {
+            System.out.print("Enter country: ");
+            country = scanner.nextLine().trim();
+            if (country.matches("[A-Za-z ]+")) break;
+            System.out.println("❌ Invalid country. Only letters and spaces allowed.");
+        }
+
+        // Combine address
+        this.address = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
 
         System.out.println("Enter birthdate (DD-MM-YYYY):");
         this.birthdate = scanner.nextLine();
@@ -77,8 +122,19 @@ public class Person {
 
     private boolean isValidId(String id) {
         if (id.length() != 10) return false;
-        if (!id.matches("^[2-9][0-9].{6}[A-Z]{2}$")) return false;
 
+        // Check first 2 characters: digits between 2–9
+        if (!Character.isDigit(id.charAt(0)) || !Character.isDigit(id.charAt(1))) return false;
+        int firstDigit = id.charAt(0) - '0';
+        int secondDigit = id.charAt(1) - '0';
+        if (firstDigit < 2 || firstDigit > 9 || secondDigit < 2 || secondDigit > 9) return false;
+
+        // Check last 2 characters: uppercase letters A-Z
+        char secondLast = id.charAt(8);
+        char last = id.charAt(9);
+        if (!Character.isUpperCase(secondLast) || !Character.isUpperCase(last)) return false;
+
+        // Check characters 3–8 (index 2–7): must include at least 2 special characters
         String middle = id.substring(2, 8);
         int specialCount = 0;
         for (char c : middle.toCharArray()) {
