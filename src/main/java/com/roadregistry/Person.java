@@ -9,15 +9,21 @@ import java.io.*;
  */
 public class Person {
     private String id;
-    private String name;
-    private int age;
+    private String firstName;
+    private String lastName;
+    private String address;
+    private String birthdate;
     private int demeritPoints;
+    private boolean isSuspended;
 
-    public Person(String id, String name, int age) {
+    public Person(String id, String firstName, String lastName, String address, String birthdate) {
         this.id = id;
-        this.name = name;
-        this.age = age;
-        this.demeritPoints = 0;  // Default value
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.birthdate = birthdate;
+        this.demeritPoints = 0; //default value
+        this.isSuspended = false;
     }
 
     /**
