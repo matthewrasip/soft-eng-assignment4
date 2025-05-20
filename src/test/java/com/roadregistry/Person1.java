@@ -1,4 +1,4 @@
 package com.roadregistry;
 
-public class Person {
+public class Person1 {
 }

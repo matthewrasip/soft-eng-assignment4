@@ -149,14 +149,14 @@ public class Person {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length != 7) {
+                if (fields.length != 6) {
                     writer.write(line + "\n");
-                    return;
+                    continue;
                 }
 
                 if (!fields[0].equals(targetId)) {
                     writer.write(line + "\n");
-                    return;
+                    continue;
                 }
 
                 found = true;
@@ -167,8 +167,7 @@ public class Person {
                 String originalLastName = fields[2];
                 String originalAddress = fields[3];
                 String originalBirthdate = fields[4];
-                String demeritPoints = fields[5];
-                String isSuspended = fields[6];
+                String isSuspended = fields[5];
 
                 String newId = originalId;
                 String newFirstName = originalFirstName;
@@ -315,38 +314,38 @@ public class Person {
         String personId = scanner.nextLine().trim();
 
         File inputFile = new File("persons.txt");
+        File offenseFile = new File("offenses.txt");
 
         String matchedLine = null;
 
-        // 🔍 Search person by ID BEFORE proceeding
+        // Load person record
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length == 7 && fields[0].equals(personId)) {
+                if (fields.length == 6 && fields[0].equals(personId)) {
                     matchedLine = line;
                     break;
                 }
             }
         } catch (IOException e) {
-            System.out.println("❌ Error reading file: " + e.getMessage());
+            System.out.println("❌ Error reading persons file.");
             return;
         }
 
         if (matchedLine == null) {
-            System.out.println("❌ Person ID not found.");
+            System.out.println("❌ Person not found.");
             return;
         }
 
-        // ✅ Person found — continue
         String[] fields = matchedLine.split(",");
         String birthdate = fields[4];
-        int currentPoints = Integer.parseInt(fields[5]);
-        boolean suspended = Boolean.parseBoolean(fields[6]);
+        boolean suspended = Boolean.parseBoolean(fields[5]);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate birth = LocalDate.parse(birthdate, formatter);
 
+        // === Offense date ===
         System.out.print("Enter offense date (DD-MM-YYYY): ");
         String offenseDateStr = scanner.nextLine().trim();
         LocalDate offenseDate;
@@ -362,10 +361,11 @@ public class Person {
                 return;
             }
         } catch (DateTimeParseException e) {
-            System.out.println("❌ Invalid offense date format.");
+            System.out.println("❌ Invalid date format.");
             return;
         }
 
+        // === Points ===
         System.out.print("Enter number of demerit points (1–6): ");
         int pointsToAdd;
         try {
@@ -379,14 +379,42 @@ public class Person {
             return;
         }
 
-        // Apply suspension logic
-        int updatedPoints = currentPoints + pointsToAdd;
-        long age = ChronoUnit.YEARS.between(birth, LocalDate.now());
-        if ((age < 21 && updatedPoints > 6) || (age >= 21 && updatedPoints > 12)) {
+        // === Calculate total points from last 2 years ===
+        int recentTotal = pointsToAdd; // include current one
+        LocalDate twoYearsAgo = LocalDate.now().minusYears(2);
+
+        try (BufferedReader offenseReader = new BufferedReader(new FileReader(offenseFile))) {
+            String line;
+            while ((line = offenseReader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length != 3) continue;
+                if (!parts[0].equals(personId)) continue;
+
+                LocalDate date = LocalDate.parse(parts[1], formatter);
+                if (!date.isBefore(twoYearsAgo)) {
+                    recentTotal += Integer.parseInt(parts[2]);
+                }
+            }
+        } catch (IOException | NumberFormatException | DateTimeParseException e) {
+            System.out.println("❌ Error reading offense history.");
+            return;
+        }
+
+        // === Log to offenses.txt ===
+        try (FileWriter offenseWriter = new FileWriter(offenseFile, true)) {
+            offenseWriter.write(personId + "," + offenseDateStr + "," + pointsToAdd + "\n");
+        } catch (IOException e) {
+            System.out.println("❌ Error logging offense.");
+            return;
+        }
+
+        // === Determine if suspended ===
+        int age = Period.between(birth, LocalDate.now()).getYears();
+        if ((age < 21 && recentTotal > 6) || (age >= 21 && recentTotal > 12)) {
             suspended = true;
         }
 
-        // Update file
+        // === Update persons.txt ===
         File tempFile = new File("persons_temp.txt");
         boolean updated = false;
 
@@ -396,9 +424,8 @@ public class Person {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] rec = line.split(",");
-                if (rec.length == 7 && rec[0].equals(personId)) {
-                    rec[5] = String.valueOf(updatedPoints);
-                    rec[6] = String.valueOf(suspended);
+                if (rec.length == 6 && rec[0].equals(personId)) {
+                    rec[5] = String.valueOf(suspended); // update suspension
                     writer.write(String.join(",", rec) + "\n");
                     updated = true;
                 } else {
@@ -407,20 +434,22 @@ public class Person {
             }
 
         } catch (IOException e) {
-            System.out.println("❌ Error updating file: " + e.getMessage());
+            System.out.println("❌ Error updating person.");
             return;
         }
 
         if (updated) {
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("❌ Could not finalize update.");
-            } else {
-                System.out.println("✅ Demerit points added successfully.");
+            if (!inputFile.delete()) {
+                System.out.println("⚠️ Warning: failed to delete original file.");
             }
+            if (!tempFile.renameTo(inputFile)) {
+                System.out.println("⚠️ Warning: failed to rename temp file.");
+            }
+            System.out.println("✅ Demerit points added. Points (past two years): " + recentTotal);
+            if (suspended) System.out.println("⚠️ Person is now suspended.");
         } else {
-            if (!tempFile.delete()) {
-                System.out.println("⚠️ Warning: Failed to delete temp file.");
-            }
+            tempFile.delete();
+            System.out.println("❌ Update failed.");
         }
     }
 
