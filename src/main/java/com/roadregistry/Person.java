@@ -190,167 +190,7 @@ public class Person {
         File inputFile = new File("persons.txt");
         File tempFile = new File("persons_temp.txt");
 
-        boolean updated = false;
         boolean found = false;
-
-        String originalLine = null;
-        String[] originalData = null;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(",");
-                if (fields.length != 7) continue;
-
-                String currentId = fields[0];
-                if (currentId.equals(targetId)) {
-                    found = true;
-                    originalLine = line;
-                    originalData = fields;
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("❌ Error reading file: " + e.getMessage());
-            return false;
-        }
-
-        if (!found) {
-            System.out.println("❌ Person with ID " + targetId + " not found.");
-            return false;
-        }
-
-        // At this point: originalData[] contains the person's record
-        // [0]=id, [1]=firstName, [2]=lastName, [3]=address, [4]=birthdate, [5]=points, [6]=isSuspended
-
-        System.out.println("✅ Person found. Proceeding to update...");
-
-        // Prepare local variables to track proposed new values
-        String newId = originalData[0];
-        String newFirstName = originalData[1];
-        String newLastName = originalData[2];
-        String newAddress = originalData[3];
-        String newBirthdate = originalData[4];
-
-        // Ask for new ID
-        System.out.print("Enter new ID (or press Enter to keep existing): ");
-        String input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (isValidId(input)) {
-                newId = input;
-            } else {
-                System.out.println("❌ Invalid ID format. Aborting update.");
-                return false;
-            }
-        }
-
-        // Ask for new first name
-        System.out.print("Enter new first name (or press Enter to keep existing): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.matches("[A-Za-z]+")) {
-                newFirstName = input;
-            } else {
-                System.out.println("❌ Invalid first name. Aborting update.");
-                return false;
-            }
-        }
-
-        // Ask for new last name
-        System.out.print("Enter new last name (or press Enter to keep existing): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.matches("[A-Za-z]+")) {
-                newLastName = input;
-            } else {
-                System.out.println("❌ Invalid last name. Aborting update.");
-                return false;
-            }
-        }
-
-        // Address – ask part-by-part (same logic as in addPerson)
-        String[] oldAddr = originalData[3].split("\\|");
-        String streetNumber = oldAddr[0];
-        String streetName = oldAddr[1];
-        String city = oldAddr[2];
-        String state = oldAddr[3];
-        String country = oldAddr[4];
-
-        // Ask for address parts (can keep or update)
-        System.out.print("Enter new street number (or press Enter to keep " + streetNumber + "): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.matches("\\d+")) streetNumber = input;
-            else {
-                System.out.println("❌ Invalid street number.");
-                return false;
-            }
-        }
-
-        System.out.print("Enter new street name (or press Enter to keep " + streetName + "): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.matches("[A-Za-z ]+")) streetName = input;
-            else {
-                System.out.println("❌ Invalid street name.");
-                return false;
-            }
-        }
-
-        System.out.print("Enter new city (or press Enter to keep " + city + "): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.matches("[A-Za-z ]+")) city = input;
-            else {
-                System.out.println("❌ Invalid city.");
-                return false;
-            }
-        }
-
-        System.out.print("Enter new state (must be Victoria, or press Enter to keep " + state + "): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.equalsIgnoreCase("Victoria")) state = input;
-            else {
-                System.out.println("❌ State must be Victoria.");
-                return false;
-            }
-        }
-
-        System.out.print("Enter new country (or press Enter to keep " + country + "): ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (input.matches("[A-Za-z ]+")) country = input;
-            else {
-                System.out.println("❌ Invalid country.");
-                return false;
-            }
-        }
-
-        // Combine new address
-        newAddress = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
-
-        // Ask for new birthdate
-        System.out.print("Enter new birthdate (DD-MM-YYYY) or press Enter to keep " + originalData[4] + ": ");
-        input = scanner.nextLine().trim();
-        if (!input.isEmpty()) {
-            if (isValidBirthdate(input)) newBirthdate = input;
-            else {
-                System.out.println("❌ Invalid birthdate.");
-                return false;
-            }
-        }
-
-        /**
-         * Adds demerit points to a person's record identified by ID.
-         * Reads from "persons.txt", updates the matching line, and writes it back.
-         *
-         * @param pointsToAdd Number of points to add
-         * @return true if update was successful, false if ID not found or error occurred.
-         */
-    public boolean addDemeritPoints(int pointsToAdd) {
-        File inputFile = new File("persons.txt");
-        File tempFile = new File("persons_temp.txt");
         boolean updated = false;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
@@ -359,7 +199,218 @@ public class Person {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length != 4) continue;
+                if (fields.length != 7) {
+                    writer.write(line + "\n");
+                    continue;
+                }
+
+                if (!fields[0].equals(targetId)) {
+                    writer.write(line + "\n");
+                    continue;
+                }
+
+                // Person found
+                found = true;
+                System.out.println("✅ Person found. Proceeding to update...");
+
+                String originalId = fields[0];
+                String originalFirstName = fields[1];
+                String originalLastName = fields[2];
+                String originalAddress = fields[3];
+                String originalBirthdate = fields[4];
+                String demeritPoints = fields[5];
+                String isSuspended = fields[6];
+
+                String newId = originalId;
+                String newFirstName = originalFirstName;
+                String newLastName = originalLastName;
+                String newAddress = originalAddress;
+                String newBirthdate = originalBirthdate;
+
+                // === Prompt updates ===
+                System.out.print("Enter new ID (or press Enter to keep): ");
+                String input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (isValidId(input)) newId = input;
+                    else {
+                        System.out.println("❌ Invalid ID. Aborting.");
+                        return false;
+                    }
+                }
+
+                System.out.print("Enter new first name (or press Enter to keep): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.matches("[A-Za-z]+")) newFirstName = input;
+                    else {
+                        System.out.println("❌ Invalid first name. Aborting.");
+                        return false;
+                    }
+                }
+
+                System.out.print("Enter new last name (or press Enter to keep): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.matches("[A-Za-z]+")) newLastName = input;
+                    else {
+                        System.out.println("❌ Invalid last name. Aborting.");
+                        return false;
+                    }
+                }
+
+                // Address (split parts)
+                String[] addr = originalAddress.split("\\|");
+                String streetNumber = addr[0];
+                String streetName = addr[1];
+                String city = addr[2];
+                String state = addr[3];
+                String country = addr[4];
+
+                System.out.print("Enter new street number (or press Enter to keep): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.matches("\\d+")) streetNumber = input;
+                    else {
+                        System.out.println("❌ Invalid street number.");
+                        return false;
+                    }
+                }
+
+                System.out.print("Enter new street name (or press Enter to keep): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.matches("[A-Za-z ]+")) streetName = input;
+                    else {
+                        System.out.println("❌ Invalid street name.");
+                        return false;
+                    }
+                }
+
+                System.out.print("Enter new city (or press Enter to keep): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.matches("[A-Za-z ]+")) city = input;
+                    else {
+                        System.out.println("❌ Invalid city.");
+                        return false;
+                    }
+                }
+
+                System.out.print("Enter new state (must be Victoria): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.equalsIgnoreCase("Victoria")) state = input;
+                    else {
+                        System.out.println("❌ State must be Victoria.");
+                        return false;
+                    }
+                }
+
+                System.out.print("Enter new country (or press Enter to keep): ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (input.matches("[A-Za-z ]+")) country = input;
+                    else {
+                        System.out.println("❌ Invalid country.");
+                        return false;
+                    }
+                }
+
+                newAddress = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
+
+                System.out.print("Enter new birthdate (DD-MM-YYYY) or press Enter to keep: ");
+                input = scanner.nextLine().trim();
+                if (!input.isEmpty()) {
+                    if (isValidBirthdate(input)) newBirthdate = input;
+                    else {
+                        System.out.println("❌ Invalid birthdate.");
+                        return false;
+                    }
+                }
+
+                // === Rule Checks ===
+                int age = getAgeFromBirthdate(originalBirthdate);
+                if (age < 18 && !newAddress.equals(originalAddress)) {
+                    System.out.println("❌ Under 18. Cannot change address.");
+                    return false;
+                }
+
+                if (!newBirthdate.equals(originalBirthdate)) {
+                    boolean otherChanged = !newId.equals(originalId) ||
+                            !newFirstName.equals(originalFirstName) ||
+                            !newLastName.equals(originalLastName) ||
+                            !newAddress.equals(originalAddress);
+
+                    if (otherChanged) {
+                        System.out.println("❌ If birthdate is changed, no other field may be changed.");
+                        return false;
+                    }
+                }
+
+                char firstChar = originalId.charAt(0);
+                if (Character.isDigit(firstChar) && ((firstChar - '0') % 2 == 0) && !newId.equals(originalId)) {
+                    System.out.println("❌ ID cannot be changed. First digit is even.");
+                    return false;
+                }
+
+                // ✅ Write updated line
+                writer.write(newId + "," + newFirstName + "," + newLastName + "," + newAddress + "," +
+                        newBirthdate + "," + demeritPoints + "," + isSuspended + "\n");
+                updated = true;
+
+            } // end while
+
+            if (!found) {
+                System.out.println("❌ Person not found.");
+                return false;
+            }
+
+        } catch (IOException e) {
+            System.out.println("❌ Error updating file: " + e.getMessage());
+            return false;
+        }
+
+        if (updated) {
+            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+                System.out.println("❌ Could not finalize update.");
+                return false;
+            }
+            System.out.println("✅ Update successful.");
+            return true;
+        } else {
+            tempFile.delete();
+            return false;
+        }
+    }
+
+    /**
+         * Adds demerit points to a person's record identified by ID.
+         * Reads from "persons.txt", updates the matching line, and writes it back.
+         *
+         * @param pointsToAdd Number of points to add
+         * @return true if update was successful, false if ID not found or error occurred.
+         */
+    public boolean addDemeritPoints() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter person ID: ");
+        String personId = scanner.nextLine().trim();
+
+        System.out.print("Enter offense date (DD-MM-YYYY): ");
+        String offenseDateStr = scanner.nextLine().trim();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        LocalDate offenseDate;
+        try {
+            offenseDate = LocalDate.parse(offenseDateStr, formatter);
+        } catch (DateTimeParseException e) {
+            System.out.println("❌ Invalid date format.");
+            return false;
+        }
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                if (fields.length != 7) continue;
 
                 String currentId = fields[0];
                 String currentName = fields[1];
@@ -400,10 +451,10 @@ public class Person {
         return firstName + " " + lastName;
     }
 
-    public int getAge() {
+    private int getAgeFromBirthdate(String birthdate) {
         String[] parts = birthdate.split("-");
         int birthYear = Integer.parseInt(parts[2]);
-        return 2025 - birthYear; // crude calculation
+        return 2025 - birthYear;
     }
 
     public int getDemeritPoints() {

@@ -18,15 +18,13 @@ public class Main {
 
             switch (choice) {
                 case "1":
-                    person = new Person("", "", "", "", "");  // re-initialize for clean input
                     person.addPerson();
                     break;
                 case "2":
-                    // person.updatePersonalDetails(); // we’ll build this next
                     person.updatePersonalDetails();
                     break;
                 case "3":
-                    // person.addDemeritPoints(); // we’ll build this next
+                     person.addDemeritPoints();
                     System.out.println("🚧 Function not implemented yet.");
                     break;
                 case "4":
