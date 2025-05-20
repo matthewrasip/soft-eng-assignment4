@@ -2,6 +2,10 @@ package com.roadregistry;
 
 import java.io.*;
 import java.util.Scanner;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Represents a person in the RoadRegistry system.
@@ -115,6 +119,7 @@ public class Person {
             System.out.println("❌ Invalid birthdate format. Must be DD-MM-YYYY.");
         }
 
+        // Save to file
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
             writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + demeritPoints + "," + isSuspended + "\n");
             System.out.println("✅ Person added successfully.");
@@ -148,13 +153,27 @@ public class Person {
         return specialCount >= 2;
     }
 
-    private boolean isValidAddress(String address) {
-        String[] parts = address.split("\\|");
-        return parts.length == 5 && parts[3].trim().equalsIgnoreCase("Victoria");
-    }
-
     private boolean isValidBirthdate(String birthdate) {
-        return birthdate.matches("^\\d{2}-\\d{2}-\\d{4}$");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        try {
+            LocalDate parsedDate = LocalDate.parse(birthdate, formatter);
+
+            // Optional: check that date is not in the future
+            if (parsedDate.isAfter(LocalDate.now())) {
+                return false;
+            }
+
+            // Optional: age should be realistic (not older than 120 years)
+            long age = ChronoUnit.YEARS.between(parsedDate, LocalDate.now());
+            if (age < 0 || age > 120) {
+                return false;
+            }
+
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 
     /**
