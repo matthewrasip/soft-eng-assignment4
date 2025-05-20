@@ -132,10 +132,6 @@ public class Person {
         return updated;
     }
 
-    // ===============================
-    // Getters and Setters
-    // ===============================
-
     public String getId() {
         return id;
     }
