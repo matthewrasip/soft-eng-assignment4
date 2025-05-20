@@ -41,6 +41,27 @@ public class Person {
         }
     }
 
+    private boolean isValidId(String id) {
+        if (id.length() != 10) return false;
+        if (!id.matches("^[2-9][0-9].{6}[A-Z]{2}$")) return false;
+
+        String middle = id.substring(2, 8);
+        int specialCount = 0;
+        for (char c : middle.toCharArray()) {
+            if (!Character.isLetterOrDigit(c)) specialCount++;
+        }
+        return specialCount >= 2;
+    }
+
+    private boolean isValidAddress(String address) {
+        String[] parts = address.split("\\|");
+        return parts.length == 5 && parts[3].trim().equalsIgnoreCase("Victoria");
+    }
+
+    private boolean isValidBirthdate(String birthdate) {
+        return birthdate.matches("^\\d{2}-\\d{2}-\\d{4}$");
+    }
+
     /**
      * Updates the personal details (name and age) of a person by ID.
      * Reads from "persons.txt", updates the matching line, and writes it back.
