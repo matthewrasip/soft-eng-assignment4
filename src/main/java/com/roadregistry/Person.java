@@ -33,6 +33,17 @@ public class Person {
         }
     }
 
+    /**
+     * Updates the personal details (name and age) of a person by ID.
+     * Reads from "persons.txt", updates the matching line, and writes it back.
+     *
+     * @return true if updated successfully, false if ID not found or error occurred.
+     */
+    public boolean updatePersonalDetails() {
+        // Implementation will go here
+        return false;
+    }
+
     // Getters and setters (used for tests- Matthew)
     public String getId() { return id; }
     public String getName() { return name; }
