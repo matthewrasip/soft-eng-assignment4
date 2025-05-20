@@ -35,14 +35,29 @@ public class Person {
     public boolean addPerson() {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter person ID (10 characters, special format required):");
-        this.id = scanner.nextLine();
+        // Person ID
+        while (true) {
+            System.out.print("Enter person ID (10 characters, special format required): ");
+            this.id = scanner.nextLine().trim();
+            if (isValidId(id)) break;
+            System.out.println("❌ Invalid ID format.");
+        }
 
-        System.out.println("Enter first name:");
-        this.firstName = scanner.nextLine();
+        // First Name
+        while (true) {
+            System.out.print("Enter first name: ");
+            this.firstName = scanner.nextLine().trim();
+            if (firstName.matches("[A-Za-z]+")) break;
+            System.out.println("❌ Invalid first name. Only letters allowed.");
+        }
 
-        System.out.println("Enter last name:");
-        this.lastName = scanner.nextLine();
+        // Last Name
+        while (true) {
+            System.out.print("Enter last name: ");
+            this.lastName = scanner.nextLine().trim();
+            if (lastName.matches("[A-Za-z]+")) break;
+            System.out.println("❌ Invalid last name. Only letters allowed.");
+        }
 
         // Street Number (e.g., 32)
         String streetNumber;
@@ -92,22 +107,12 @@ public class Person {
         // Combine address
         this.address = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
 
-        System.out.println("Enter birthdate (DD-MM-YYYY):");
-        this.birthdate = scanner.nextLine();
-
-        if (!isValidId(id)) {
-            System.out.println("❌ Invalid ID format.");
-            return false;
-        }
-
-        if (!isValidAddress(address)) {
-            System.out.println("❌ Invalid address format.");
-            return false;
-        }
-
-        if (!isValidBirthdate(birthdate)) {
-            System.out.println("❌ Invalid birthdate format.");
-            return false;
+        // Birthdate (DD-MM-YYYY)
+        while (true) {
+            System.out.print("Enter birthdate (DD-MM-YYYY): ");
+            this.birthdate = scanner.nextLine().trim();
+            if (isValidBirthdate(birthdate)) break;
+            System.out.println("❌ Invalid birthdate format. Must be DD-MM-YYYY.");
         }
 
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
