@@ -407,6 +407,26 @@ public class Person {
             return false;
         }
 
+        System.out.print("Enter number of demerit points (1-6): ");
+        int pointsToAdd;
+        try {
+            pointsToAdd = Integer.parseInt(scanner.nextLine().trim());
+            if (pointsToAdd < 1 || pointsToAdd > 6) {
+                System.out.println("❌ Points must be between 1 and 6.");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Invalid number.");
+            return false;
+        }
+
+        File inputFile = new File("persons.txt");
+        File tempFile = new File("persons_temp.txt");
+        boolean updated = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
