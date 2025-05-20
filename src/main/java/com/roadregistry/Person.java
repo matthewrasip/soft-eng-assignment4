@@ -1,6 +1,7 @@
 package com.roadregistry;
 
 import java.io.*;
+import java.util.Scanner;
 
 /**
  * Represents a person in the RoadRegistry system.
@@ -32,11 +33,44 @@ public class Person {
      * @return true if saved successfully, false otherwise.
      */
     public boolean addPerson() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter person ID (10 characters, special format required):");
+        this.id = scanner.nextLine();
+
+        System.out.println("Enter first name:");
+        this.firstName = scanner.nextLine();
+
+        System.out.println("Enter last name:");
+        this.lastName = scanner.nextLine();
+
+        System.out.println("Enter address (StreetNo|Street|City|State|Country):");
+        this.address = scanner.nextLine();
+
+        System.out.println("Enter birthdate (DD-MM-YYYY):");
+        this.birthdate = scanner.nextLine();
+
+        if (!isValidId(id)) {
+            System.out.println("❌ Invalid ID format.");
+            return false;
+        }
+
+        if (!isValidAddress(address)) {
+            System.out.println("❌ Invalid address format.");
+            return false;
+        }
+
+        if (!isValidBirthdate(birthdate)) {
+            System.out.println("❌ Invalid birthdate format.");
+            return false;
+        }
+
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
-            writer.write(id + "," + name + "," + age + "," + demeritPoints + "\n");
+            writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + demeritPoints + "," + isSuspended + "\n");
+            System.out.println("✅ Person added successfully.");
             return true;
         } catch (IOException e) {
-            System.out.println("Error writing to file: " + e.getMessage());
+            System.out.println("❌ Error writing to file: " + e.getMessage());
             return false;
         }
     }
