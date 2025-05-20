@@ -430,37 +430,54 @@ public class Person {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length != 7) continue;
-
-                String currentId = fields[0];
-                String currentName = fields[1];
-                int currentAge = Integer.parseInt(fields[2]);
-                int currentPoints = Integer.parseInt(fields[3]);
-
-                if (currentId.equals(this.id)) {
-                    int updatedPoints = currentPoints + pointsToAdd;
-                    writer.write(fields[0] + ", " + fields[1] + ", " + fields[2] + ", " + fields[3] + ", " + fields[4] + ", " + updatedPoints + ", " + fields[6] + "\n");
-                    updated = true;
-                } else {
+                if (fields.length != 7) {
                     writer.write(line + "\n");
+                    continue;
                 }
+
+                if (!fields[0].equals(personId)) {
+                    writer.write(line + "\n");
+                    continue;
+                }
+
+                // person found
+                String birthdate = fields[4];
+                int currentPoints = Integer.parseInt(fields[5]);
+                boolean suspended = Boolean.parseBoolean(fields[6]);
+
+                // calculate age at offense date
+                LocalDate birth = LocalDate.parse(birthdate, formatter);
+                long age = ChronoUnit.YEARS.between(birth, offenseDate);
+                int updatedPoints = currentPoints + pointsToAdd;
+
+                // check for suspension
+                if (age < 21 && updatedPoints > 6) suspended = true;
+                if (age >= 21 && updatedPoints > 12) suspended = true;
+
+                fields[5] = String.valueOf(updatedPoints);
+                fields[6] = String.valueOf(suspended);
+
+                writer.write(String.join(",", fields) + "\n");
+                updated = true;
             }
 
-        } catch (IOException | NumberFormatException e) {
-            System.out.println("Error updating demerit points: " + e.getMessage());
+        } catch (IOException | NumberFormatException | DateTimeParseException e) {
+            System.out.println("❌ Error: " + e.getMessage());
             return false;
         }
 
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Could not finalize file update.");
+                System.out.println("❌ Could not finalize file update.");
                 return false;
             }
+            System.out.println("✅ Demerit points added successfully.");
+            return true;
         } else {
             tempFile.delete();
+            System.out.println("❌ Person ID not found.");
+            return false;
         }
-
-        return updated;
     }
 
     public String getId() {
