@@ -169,7 +169,7 @@ public class Person {
 
                 if (currentId.equals(this.id)) {
                     int updatedPoints = currentPoints + pointsToAdd;
-                    writer.write(currentId + "," + currentName + "," + currentAge + "," + updatedPoints + "\n");
+                    writer.write(fields[0] + "," + fields[1] + "," + fields[2] + "," + fields[3] + "," + fields[4] + "," + updatedPoints + "," + fields[6] + "\n");
                     updated = true;
                 } else {
                     writer.write(line + "\n");
