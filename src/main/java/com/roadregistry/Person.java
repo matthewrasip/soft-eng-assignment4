@@ -14,6 +14,16 @@ public class Person {
         this.age = age;
     }
 
+    public boolean addPerson() {
+        try (FileWriter writer = new FileWriter("persons.txt", true)) {
+            writer.write(id + "," + name + "," + age + "\n");
+            return true;
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+            return false;
+        }
+    }
+
     // Getters and setters (used for tests- Matthew)
     public String getId() { return id; }
     public String getName() { return name; }
