@@ -3,6 +3,10 @@ package com.roadregistry;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * Represents a person in the RoadRegistry system.
+ * Supports adding new person records to a text file.
+ */
 public class Person {
     private String id;
     private String name;
@@ -14,6 +18,11 @@ public class Person {
         this.age = age;
     }
 
+    /**
+     * Appends a person's record to persons.txt file.
+     *
+     * @return true if saved successfully, false otherwise.
+     */
     public boolean addPerson() {
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
             writer.write(id + "," + name + "," + age + "\n");
