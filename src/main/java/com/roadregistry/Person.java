@@ -19,8 +19,8 @@ public class Person {
     private String lastName;
     private String address;
     private String birthdate;
-    private int demeritPoints;
-    private boolean isSuspended;
+    private final int demeritPoints;
+    private final boolean isSuspended;
 
     public Person(String id, String firstName, String lastName, String address, String birthdate) {
         this.id = id;
@@ -131,7 +131,7 @@ public class Person {
      * Updates the personal details (name and age) of a person by ID.
      * Reads from "persons.txt", updates the matching line, and writes it back.
      */
-    public boolean updatePersonalDetails() {
+    public void updatePersonalDetails() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the ID of the person you want to update: ");
         String targetId = scanner.nextLine().trim();
@@ -152,12 +152,12 @@ public class Person {
                 String[] fields = line.split(",");
                 if (fields.length != 7) {
                     writer.write(line + "\n");
-                    continue;
+                    return;
                 }
 
                 if (!fields[0].equals(targetId)) {
                     writer.write(line + "\n");
-                    continue;
+                    return;
                 }
 
                 found = true;
@@ -182,7 +182,6 @@ public class Person {
                 int age = getAgeFromBirthdate(String.valueOf(birth));
 
                 boolean hasOtherChanges = false;
-                boolean allowBirthdateChange = true;
 
                 // === ID Update (check even digit restriction) ===
                 char firstDigit = originalId.charAt(0);
@@ -258,7 +257,7 @@ public class Person {
 
                     System.out.print("Enter new state (must be Victoria, or press Enter to keep): ");
                     input = scanner.nextLine().trim();
-                    if (!input.isEmpty() && input.equalsIgnoreCase("Victoria")) {
+                    if (input.equalsIgnoreCase("Victoria")) {
                         state = input;
                         hasOtherChanges = true;
                     }
@@ -293,25 +292,19 @@ public class Person {
 
             if (!found) {
                 System.out.println("❌ Person not found.");
-                return false;
+                return;
             }
 
         } catch (IOException | DateTimeParseException e) {
             System.out.println("❌ Error updating person: " + e.getMessage());
-            return false;
+            return;
         }
 
-        if (updated) {
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("❌ Could not finalize update.");
-                return false;
-            }
-            System.out.println("✅ Update successful.");
-            return true;
-        } else {
-            tempFile.delete();
-            return false;
+        if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+            System.out.println("❌ Could not finalize update.");
+            return;
         }
+        System.out.println("✅ Update successful.");
     }
 
     /**
@@ -454,41 +447,13 @@ public class Person {
 
             // Optional: age should be realistic (not older than 120 years)
             long age = ChronoUnit.YEARS.between(parsedDate, LocalDate.now());
-            if (age < 0 || age > 120) {
-                return false;
-            }
-
-            return true;
+            return age >= 0 && age <= 120;
         } catch (DateTimeParseException e) {
             return false;
         }
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return firstName + " " + lastName;
-    }
-
     private int getAgeFromBirthdate(String birthdate) {
         return Period.between(LocalDate.parse(birthdate), LocalDate.now()).getYears();
-    }
-
-    public int getDemeritPoints() {
-        return demeritPoints;
-    }
-
-    public void setDemeritPoints(int demeritPoints) {
-        this.demeritPoints = demeritPoints;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 }
