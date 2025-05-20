@@ -183,44 +183,49 @@ public class Person {
      * @return true if updated successfully, false if ID not found or error occurred.
      */
     public boolean updatePersonalDetails() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the ID of the person you want to update: ");
+        String targetId = scanner.nextLine().trim();
+
         File inputFile = new File("persons.txt");
         File tempFile = new File("persons_temp.txt");
+
         boolean updated = false;
+        boolean found = false;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+        String originalLine = null;
+        String[] originalData = null;
 
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
                 if (fields.length != 7) continue;
 
                 String currentId = fields[0];
-
-                if (currentId.equals(this.id)) {
-                    writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + demeritPoints + "," + isSuspended + "\n");
-                    updated = true;
-                } else {
-                    writer.write(line + "\n");
+                if (currentId.equals(targetId)) {
+                    found = true;
+                    originalLine = line;
+                    originalData = fields;
+                    break;
                 }
             }
-
         } catch (IOException e) {
-            System.out.println("Error updating person: " + e.getMessage());
+            System.out.println("❌ Error reading file: " + e.getMessage());
             return false;
         }
 
-        if (updated) {
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Could not finalize file update.");
-                return false;
-            }
-        } else {
-            tempFile.delete();
+        if (!found) {
+            System.out.println("❌ Person with ID " + targetId + " not found.");
+            return false;
         }
 
-        return updated;
-    }
+        // At this point: originalData[] contains the person's record
+        // [0]=id, [1]=firstName, [2]=lastName, [3]=address, [4]=birthdate, [5]=points, [6]=isSuspended
+
+        System.out.println("✅ Person found. Proceeding to update...");
+
+        // Next step: prompt for new values...
 
     /**
      * Adds demerit points to a person's record identified by ID.
@@ -249,7 +254,7 @@ public class Person {
 
                 if (currentId.equals(this.id)) {
                     int updatedPoints = currentPoints + pointsToAdd;
-                    writer.write(fields[0] + "," + fields[1] + "," + fields[2] + "," + fields[3] + "," + fields[4] + "," + updatedPoints + "," + fields[6] + "\n");
+                    writer.write(fields[0] + ", " + fields[1] + ", " + fields[2] + ", " + fields[3] + ", " + fields[4] + ", " + updatedPoints + ", " + fields[6] + "\n");
                     updated = true;
                 } else {
                     writer.write(line + "\n");
