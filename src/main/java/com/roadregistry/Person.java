@@ -113,12 +113,12 @@ public class Person {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length != 4) continue;
+                if (fields.length != 7) continue;
 
                 String currentId = fields[0];
 
                 if (currentId.equals(this.id)) {
-                    writer.write(id + "," + name + "," + age + "," + demeritPoints + "\n");
+                    writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + demeritPoints + "," + isSuspended + "\n");
                     updated = true;
                 } else {
                     writer.write(line + "\n");
