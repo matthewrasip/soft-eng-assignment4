@@ -198,23 +198,25 @@ public class Person {
     }
 
     public String getName() {
-        return name;
+        return firstName + " " + lastName;
     }
 
     public int getAge() {
-        return age;
+        String[] parts = birthdate.split("-");
+        int birthYear = Integer.parseInt(parts[2]);
+        return 2025 - birthYear; // crude calculation
     }
 
     public int getDemeritPoints() {
         return demeritPoints;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public void setDemeritPoints(int demeritPoints) {
