@@ -418,7 +418,9 @@ public class Person {
                 System.out.println("✅ Demerit points added successfully.");
             }
         } else {
-            tempFile.delete();
+            if (!tempFile.delete()) {
+                System.out.println("⚠️ Warning: Failed to delete temp file.");
+            }
         }
     }
 
