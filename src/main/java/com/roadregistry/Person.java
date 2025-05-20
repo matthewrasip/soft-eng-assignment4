@@ -227,13 +227,13 @@ public class Person {
 
         // Next step: prompt for new values...
 
-    /**
-     * Adds demerit points to a person's record identified by ID.
-     * Reads from "persons.txt", updates the matching line, and writes it back.
-     *
-     * @param pointsToAdd Number of points to add
-     * @return true if update was successful, false if ID not found or error occurred.
-     */
+        /**
+         * Adds demerit points to a person's record identified by ID.
+         * Reads from "persons.txt", updates the matching line, and writes it back.
+         *
+         * @param pointsToAdd Number of points to add
+         * @return true if update was successful, false if ID not found or error occurred.
+         */
     public boolean addDemeritPoints(int pointsToAdd) {
         File inputFile = new File("persons.txt");
         File tempFile = new File("persons_temp.txt");

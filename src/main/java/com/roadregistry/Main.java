@@ -23,7 +23,7 @@ public class Main {
                     break;
                 case "2":
                     // person.updatePersonalDetails(); // we’ll build this next
-                    System.out.println("🚧 Function not implemented yet.");
+                    person.updatePersonalDetails();
                     break;
                 case "3":
                     // person.addDemeritPoints(); // we’ll build this next
