@@ -55,8 +55,7 @@ public class Person {
                 String currentId = fields[0];
 
                 if (currentId.equals(this.id)) {
-                    // Replace the line with updated details
-                    writer.write(id + "," + name + "," + age + "\n");
+                    writer.write(id + "," + name + "," + age + "," + demeritPoints + "\n");
                     updated = true;
                 } else {
                     writer.write(line + "\n");
