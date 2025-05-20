@@ -4,17 +4,20 @@ import java.io.*;
 
 /**
  * Represents a person in the RoadRegistry system.
- * Supports adding new person records to a text file.
+ * Supports adding new person records, updating personal details,
+ * and adding demerit points using a text file for storage.
  */
 public class Person {
     private String id;
     private String name;
     private int age;
+    private int demeritPoints;
 
     public Person(String id, String name, int age) {
         this.id = id;
         this.name = name;
         this.age = age;
+        this.demeritPoints = 0;  // Default value
     }
 
     /**
@@ -24,7 +27,7 @@ public class Person {
      */
     public boolean addPerson() {
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
-            writer.write(id + "," + name + "," + age + "\n");
+            writer.write(id + "," + name + "," + age + "," + demeritPoints + "\n");
             return true;
         } catch (IOException e) {
             System.out.println("Error writing to file: " + e.getMessage());
@@ -41,7 +44,6 @@ public class Person {
     public boolean updatePersonalDetails() {
         File inputFile = new File("persons.txt");
         File tempFile = new File("persons_temp.txt");
-
         boolean updated = false;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
@@ -50,7 +52,7 @@ public class Person {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split(",");
-                if (fields.length != 3) continue;
+                if (fields.length != 4) continue;
 
                 String currentId = fields[0];
 
@@ -67,14 +69,13 @@ public class Person {
             return false;
         }
 
-        // Replace the original file with the updated one
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
                 System.out.println("Could not finalize file update.");
                 return false;
             }
         } else {
-            tempFile.delete(); // Cleanup temp if no update occurred
+            tempFile.delete();
         }
 
         return updated;
@@ -90,7 +91,6 @@ public class Person {
     public boolean addDemeritPoints(int pointsToAdd) {
         File inputFile = new File("persons.txt");
         File tempFile = new File("persons_temp.txt");
-
         boolean updated = false;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
@@ -120,43 +120,47 @@ public class Person {
             return false;
         }
 
-        // Replace the original file with the updated one
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
                 System.out.println("Could not finalize file update.");
                 return false;
             }
         } else {
-            tempFile.delete(); // Cleanup temp if no update occurred
+            tempFile.delete();
         }
 
         return updated;
     }
 
-    private int demeritPoints;
+    // ===============================
+    // Getters and Setters
+    // ===============================
 
-    // Update constructor
-    public Person(String id, String name, int age) {
-        this.id = id;
-        this.name = name;
-        this.age = age;
-        this.demeritPoints = 0;  // default
+    public String getId() {
+        return id;
     }
 
-    // add getter/setter
+    public String getName() {
+        return name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
     public int getDemeritPoints() {
         return demeritPoints;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 
     public void setDemeritPoints(int demeritPoints) {
         this.demeritPoints = demeritPoints;
     }
-
-    // Getters and setters (used for tests-Matthew)
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public int getAge() { return age; }
-
-    public void setName(String name) { this.name = name; }
-    public void setAge(int age) { this.age = age; }
 }
