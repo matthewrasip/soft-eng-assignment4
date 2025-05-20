@@ -80,7 +80,60 @@ public class Person {
         return updated;
     }
 
-    private int demeritPoints;  // New field
+    /**
+     * Adds demerit points to a person's record identified by ID.
+     * Reads from "persons.txt", updates the matching line, and writes it back.
+     *
+     * @param pointsToAdd Number of points to add
+     * @return true if update was successful, false if ID not found or error occurred.
+     */
+    public boolean addDemeritPoints(int pointsToAdd) {
+        File inputFile = new File("persons.txt");
+        File tempFile = new File("persons_temp.txt");
+
+        boolean updated = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                if (fields.length != 4) continue;
+
+                String currentId = fields[0];
+                String currentName = fields[1];
+                int currentAge = Integer.parseInt(fields[2]);
+                int currentPoints = Integer.parseInt(fields[3]);
+
+                if (currentId.equals(this.id)) {
+                    int updatedPoints = currentPoints + pointsToAdd;
+                    writer.write(currentId + "," + currentName + "," + currentAge + "," + updatedPoints + "\n");
+                    updated = true;
+                } else {
+                    writer.write(line + "\n");
+                }
+            }
+
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("Error updating demerit points: " + e.getMessage());
+            return false;
+        }
+
+        // Replace the original file with the updated one
+        if (updated) {
+            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+                System.out.println("Could not finalize file update.");
+                return false;
+            }
+        } else {
+            tempFile.delete(); // Cleanup temp if no update occurred
+        }
+
+        return updated;
+    }
+
+    private int demeritPoints;
 
     // Update constructor
     public Person(String id, String name, int age) {
@@ -90,7 +143,7 @@ public class Person {
         this.demeritPoints = 0;  // default
     }
 
-    // Optional: add getter/setter
+    // add getter/setter
     public int getDemeritPoints() {
         return demeritPoints;
     }
