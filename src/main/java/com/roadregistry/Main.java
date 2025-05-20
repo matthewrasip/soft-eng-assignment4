@@ -24,8 +24,7 @@ public class Main {
                     person.updatePersonalDetails();
                     break;
                 case "3":
-                     person.addDemeritPoints();
-                    System.out.println("🚧 Function not implemented yet.");
+                    person.addDemeritPoints();
                     break;
                 case "4":
                     System.out.println("Exiting... 🚪");

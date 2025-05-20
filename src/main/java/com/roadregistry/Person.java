@@ -33,10 +33,8 @@ public class Person {
 
     /**
      * Appends a person's record to persons.txt file.
-     *
-     * @return true if saved successfully, false otherwise.
      */
-    public boolean addPerson() {
+    public void addPerson() {
         Scanner scanner = new Scanner(System.in);
 
         // Person ID
@@ -123,66 +121,16 @@ public class Person {
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
             writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + demeritPoints + "," + isSuspended + "\n");
             System.out.println("✅ Person added successfully.");
-            return true;
         } catch (IOException e) {
             System.out.println("❌ Error writing to file: " + e.getMessage());
-            return false;
-        }
-    }
-
-    private boolean isValidId(String id) {
-        if (id.length() != 10) return false;
-
-        // Check first 2 characters: digits between 2–9
-        if (!Character.isDigit(id.charAt(0)) || !Character.isDigit(id.charAt(1))) return false;
-        int firstDigit = id.charAt(0) - '0';
-        int secondDigit = id.charAt(1) - '0';
-        if (firstDigit < 2 || firstDigit > 9 || secondDigit < 2 || secondDigit > 9) return false;
-
-        // Check last 2 characters: uppercase letters A-Z
-        char secondLast = id.charAt(8);
-        char last = id.charAt(9);
-        if (!Character.isUpperCase(secondLast) || !Character.isUpperCase(last)) return false;
-
-        // Check characters 3–8 (index 2–7): must include at least 2 special characters
-        String middle = id.substring(2, 8);
-        int specialCount = 0;
-        for (char c : middle.toCharArray()) {
-            if (!Character.isLetterOrDigit(c)) specialCount++;
-        }
-        return specialCount >= 2;
-    }
-
-    private boolean isValidBirthdate(String birthdate) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-        try {
-            LocalDate parsedDate = LocalDate.parse(birthdate, formatter);
-
-            // Optional: check that date is not in the future
-            if (parsedDate.isAfter(LocalDate.now())) {
-                return false;
-            }
-
-            // Optional: age should be realistic (not older than 120 years)
-            long age = ChronoUnit.YEARS.between(parsedDate, LocalDate.now());
-            if (age < 0 || age > 120) {
-                return false;
-            }
-
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
         }
     }
 
     /**
      * Updates the personal details (name and age) of a person by ID.
      * Reads from "persons.txt", updates the matching line, and writes it back.
-     *
-     * @return true if updated successfully, false if ID not found or error occurred.
      */
-    public boolean updatePersonalDetails() {
+    public void updatePersonalDetails() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the ID of the person you want to update: ");
         String targetId = scanner.nextLine().trim();
@@ -234,7 +182,7 @@ public class Person {
                     if (isValidId(input)) newId = input;
                     else {
                         System.out.println("❌ Invalid ID. Aborting.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -244,7 +192,7 @@ public class Person {
                     if (input.matches("[A-Za-z]+")) newFirstName = input;
                     else {
                         System.out.println("❌ Invalid first name. Aborting.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -254,7 +202,7 @@ public class Person {
                     if (input.matches("[A-Za-z]+")) newLastName = input;
                     else {
                         System.out.println("❌ Invalid last name. Aborting.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -272,7 +220,7 @@ public class Person {
                     if (input.matches("\\d+")) streetNumber = input;
                     else {
                         System.out.println("❌ Invalid street number.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -282,7 +230,7 @@ public class Person {
                     if (input.matches("[A-Za-z ]+")) streetName = input;
                     else {
                         System.out.println("❌ Invalid street name.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -292,7 +240,7 @@ public class Person {
                     if (input.matches("[A-Za-z ]+")) city = input;
                     else {
                         System.out.println("❌ Invalid city.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -302,7 +250,7 @@ public class Person {
                     if (input.equalsIgnoreCase("Victoria")) state = input;
                     else {
                         System.out.println("❌ State must be Victoria.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -312,7 +260,7 @@ public class Person {
                     if (input.matches("[A-Za-z ]+")) country = input;
                     else {
                         System.out.println("❌ Invalid country.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -324,7 +272,7 @@ public class Person {
                     if (isValidBirthdate(input)) newBirthdate = input;
                     else {
                         System.out.println("❌ Invalid birthdate.");
-                        return false;
+                        return;
                     }
                 }
 
@@ -332,7 +280,7 @@ public class Person {
                 int age = getAgeFromBirthdate(originalBirthdate);
                 if (age < 18 && !newAddress.equals(originalAddress)) {
                     System.out.println("❌ Under 18. Cannot change address.");
-                    return false;
+                    return;
                 }
 
                 if (!newBirthdate.equals(originalBirthdate)) {
@@ -343,14 +291,14 @@ public class Person {
 
                     if (otherChanged) {
                         System.out.println("❌ If birthdate is changed, no other field may be changed.");
-                        return false;
+                        return;
                     }
                 }
 
                 char firstChar = originalId.charAt(0);
                 if (Character.isDigit(firstChar) && ((firstChar - '0') % 2 == 0) && !newId.equals(originalId)) {
                     System.out.println("❌ ID cannot be changed. First digit is even.");
-                    return false;
+                    return;
                 }
 
                 // ✅ Write updated line
@@ -362,35 +310,30 @@ public class Person {
 
             if (!found) {
                 System.out.println("❌ Person not found.");
-                return false;
+                return;
             }
 
         } catch (IOException e) {
             System.out.println("❌ Error updating file: " + e.getMessage());
-            return false;
+            return;
         }
 
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
                 System.out.println("❌ Could not finalize update.");
-                return false;
+                return;
             }
             System.out.println("✅ Update successful.");
-            return true;
         } else {
             tempFile.delete();
-            return false;
         }
     }
 
     /**
-         * Adds demerit points to a person's record identified by ID.
-         * Reads from "persons.txt", updates the matching line, and writes it back.
-         *
-         * @param pointsToAdd Number of points to add
-         * @return true if update was successful, false if ID not found or error occurred.
-         */
-    public boolean addDemeritPoints() {
+     * Adds demerit points to a person's record identified by ID.
+     * Reads from "persons.txt", updates the matching line, and writes it back.
+     */
+    public void addDemeritPoints() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter person ID: ");
         String personId = scanner.nextLine().trim();
@@ -402,22 +345,13 @@ public class Person {
         LocalDate offenseDate;
         try {
             offenseDate = LocalDate.parse(offenseDateStr, formatter);
+            if (offenseDate.isAfter(LocalDate.now())) {
+                System.out.println("❌ Offense date cannot be in the future.");
+                return;
+            }
         } catch (DateTimeParseException e) {
             System.out.println("❌ Invalid date format.");
-            return false;
-        }
-
-        System.out.print("Enter number of demerit points (1-6): ");
-        int pointsToAdd;
-        try {
-            pointsToAdd = Integer.parseInt(scanner.nextLine().trim());
-            if (pointsToAdd < 1 || pointsToAdd > 6) {
-                System.out.println("❌ Points must be between 1 and 6.");
-                return false;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Invalid number.");
-            return false;
+            return;
         }
 
         File inputFile = new File("persons.txt");
@@ -440,17 +374,38 @@ public class Person {
                     continue;
                 }
 
-                // person found
+                // Person found
                 String birthdate = fields[4];
                 int currentPoints = Integer.parseInt(fields[5]);
                 boolean suspended = Boolean.parseBoolean(fields[6]);
 
-                // calculate age at offense date
                 LocalDate birth = LocalDate.parse(birthdate, formatter);
-                long age = ChronoUnit.YEARS.between(birth, offenseDate);
+
+                if (offenseDate.isBefore(birth)) {
+                    System.out.println("❌ Offense date cannot be before person's birthdate.");
+                    return;
+                }
+
+                // Age calculated as of today (not offense date)
+                long age = ChronoUnit.YEARS.between(birth, LocalDate.now());
+
+                // Only ask for points after confirming all date-related conditions
+                System.out.print("Enter number of demerit points (1–6): ");
+                int pointsToAdd;
+                try {
+                    pointsToAdd = Integer.parseInt(scanner.nextLine().trim());
+                    if (pointsToAdd < 1 || pointsToAdd > 6) {
+                        System.out.println("❌ Points must be between 1 and 6.");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Invalid number.");
+                    return;
+                }
+
                 int updatedPoints = currentPoints + pointsToAdd;
 
-                // check for suspension
+                // Suspension rules
                 if (age < 21 && updatedPoints > 6) suspended = true;
                 if (age >= 21 && updatedPoints > 12) suspended = true;
 
@@ -463,19 +418,63 @@ public class Person {
 
         } catch (IOException | NumberFormatException | DateTimeParseException e) {
             System.out.println("❌ Error: " + e.getMessage());
-            return false;
+            return;
         }
 
         if (updated) {
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
                 System.out.println("❌ Could not finalize file update.");
-                return false;
+                return;
             }
             System.out.println("✅ Demerit points added successfully.");
-            return true;
         } else {
             tempFile.delete();
             System.out.println("❌ Person ID not found.");
+        }
+    }
+
+    private boolean isValidId(String id) {
+        if (id.length() != 10) return false;
+
+        // Check first 2 characters: digits between 2–9
+        if (!Character.isDigit(id.charAt(0)) || !Character.isDigit(id.charAt(1))) return false;
+        int firstDigit = id.charAt(0) - '0';
+        int secondDigit = id.charAt(1) - '0';
+        if (firstDigit < 2 || firstDigit > 9 || secondDigit < 2 || secondDigit > 9) return false;
+
+        // Check last 2 characters: uppercase letters A-Z
+        char secondLast = id.charAt(8);
+        char last = id.charAt(9);
+        if (!Character.isUpperCase(secondLast) || !Character.isUpperCase(last)) return false;
+
+        // Check characters 3–8 (index 2–7): must include at least 2 special characters
+        String middle = id.substring(2, 8);
+        int specialCount = 0;
+        for (char c : middle.toCharArray()) {
+            if (!Character.isLetterOrDigit(c)) specialCount++;
+        }
+        return specialCount >= 2;
+    }
+
+    private boolean isValidBirthdate(String birthdate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        try {
+            LocalDate parsedDate = LocalDate.parse(birthdate, formatter);
+
+            // Optional: check that date is not in the future
+            if (parsedDate.isAfter(LocalDate.now())) {
+                return false;
+            }
+
+            // Optional: age should be realistic (not older than 120 years)
+            long age = ChronoUnit.YEARS.between(parsedDate, LocalDate.now());
+            if (age < 0 || age > 120) {
+                return false;
+            }
+
+            return true;
+        } catch (DateTimeParseException e) {
             return false;
         }
     }
