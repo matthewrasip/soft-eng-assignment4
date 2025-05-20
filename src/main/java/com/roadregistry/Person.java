@@ -225,7 +225,121 @@ public class Person {
 
         System.out.println("✅ Person found. Proceeding to update...");
 
-        // Next step: prompt for new values...
+        // Prepare local variables to track proposed new values
+        String newId = originalData[0];
+        String newFirstName = originalData[1];
+        String newLastName = originalData[2];
+        String newAddress = originalData[3];
+        String newBirthdate = originalData[4];
+
+        // Ask for new ID
+        System.out.print("Enter new ID (or press Enter to keep existing): ");
+        String input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (isValidId(input)) {
+                newId = input;
+            } else {
+                System.out.println("❌ Invalid ID format. Aborting update.");
+                return false;
+            }
+        }
+
+        // Ask for new first name
+        System.out.print("Enter new first name (or press Enter to keep existing): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.matches("[A-Za-z]+")) {
+                newFirstName = input;
+            } else {
+                System.out.println("❌ Invalid first name. Aborting update.");
+                return false;
+            }
+        }
+
+        // Ask for new last name
+        System.out.print("Enter new last name (or press Enter to keep existing): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.matches("[A-Za-z]+")) {
+                newLastName = input;
+            } else {
+                System.out.println("❌ Invalid last name. Aborting update.");
+                return false;
+            }
+        }
+
+        // Address – ask part-by-part (same logic as in addPerson)
+        String[] oldAddr = originalData[3].split("\\|");
+        String streetNumber = oldAddr[0];
+        String streetName = oldAddr[1];
+        String city = oldAddr[2];
+        String state = oldAddr[3];
+        String country = oldAddr[4];
+
+        // Ask for address parts (can keep or update)
+        System.out.print("Enter new street number (or press Enter to keep " + streetNumber + "): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.matches("\\d+")) streetNumber = input;
+            else {
+                System.out.println("❌ Invalid street number.");
+                return false;
+            }
+        }
+
+        System.out.print("Enter new street name (or press Enter to keep " + streetName + "): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.matches("[A-Za-z ]+")) streetName = input;
+            else {
+                System.out.println("❌ Invalid street name.");
+                return false;
+            }
+        }
+
+        System.out.print("Enter new city (or press Enter to keep " + city + "): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.matches("[A-Za-z ]+")) city = input;
+            else {
+                System.out.println("❌ Invalid city.");
+                return false;
+            }
+        }
+
+        System.out.print("Enter new state (must be Victoria, or press Enter to keep " + state + "): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.equalsIgnoreCase("Victoria")) state = input;
+            else {
+                System.out.println("❌ State must be Victoria.");
+                return false;
+            }
+        }
+
+        System.out.print("Enter new country (or press Enter to keep " + country + "): ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (input.matches("[A-Za-z ]+")) country = input;
+            else {
+                System.out.println("❌ Invalid country.");
+                return false;
+            }
+        }
+
+        // Combine new address
+        newAddress = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
+
+        // Ask for new birthdate
+        System.out.print("Enter new birthdate (DD-MM-YYYY) or press Enter to keep " + originalData[4] + ": ");
+        input = scanner.nextLine().trim();
+        if (!input.isEmpty()) {
+            if (isValidBirthdate(input)) newBirthdate = input;
+            else {
+                System.out.println("❌ Invalid birthdate.");
+                return false;
+            }
+        }
 
         /**
          * Adds demerit points to a person's record identified by ID.
