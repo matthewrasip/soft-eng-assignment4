@@ -5,3 +5,4 @@ id,firstName,lastName,address,birthdate,isSuspended
 44x_m*%bAC,Sara,Kaur,74|Wattle Ave|Ballarat|Victoria|Australia,29-06-2006,true
 26s_d%&fAB,Niki,Gupta,88|Pop Blvd|Vale|Victoria|Australia,03-11-2004,false
 22!!!!!!AB,Matthew,R,120|Albion|Melbourne|Victoria|Australia,14-04-2004,false
+34234#$3BD,Gursewak,Gaur,23|Fern|Melton|Victoria|Australia,14-09-2003,false

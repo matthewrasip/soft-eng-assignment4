@@ -41,7 +41,7 @@ public class Person {
             System.out.print("Enter person ID (10 characters, special format required): ");
             this.id = scanner.nextLine().trim();
             if (isValidId(id)) break;
-            System.out.println("❌ Invalid ID format.");
+            System.out.println("❌ Invalid ID format.\n\tRules:\n\t- Exactly 10 characters long.\n\t- The first two characters must be digits between 2 and 9.\n\t- Characters 3 to 8 must include at least 2 special characters.\n\t- The last two characters must be uppercase English letters (A–Z).\n");
         }
 
         // First Name
@@ -446,7 +446,9 @@ public class Person {
             System.out.println("✅ Demerit points added. Points (past two years): " + recentTotal);
             if (suspended) System.out.println("⚠️ Person is now suspended.");
         } else {
-            tempFile.delete();
+            if (!tempFile.delete()) {
+                System.out.println("⚠️ Warning: Failed to delete temp file.");
+            }
             System.out.println("❌ Update failed.");
         }
     }
