@@ -1,7 +1,0 @@
-id,firstName,lastName,address,birthdate,isSuspended
-56s_d%&fAB,John,Doe,32|Highland Street|Melbourne|Victoria|Australia,15-11-2000,0,false
-67f_g#@kXY,Emily,Smith,10|Lake View|Geelong|Victoria|Australia,22-08-1995,false
-89r$k!%zLM,David,Brown,56|Kingston Road|Bendigo|Victoria|Australia,09-04-1987,false
-44x_m*%bAC,Sara,Kaur,74|Wattle Ave|Ballarat|Victoria|Australia,29-06-2006,true
-26s_d%&fAB,Niki,Gupta,88|Pop Blvd|Vale|Victoria|Australia,03-11-2004,false
-22!!!!!!AB,Matthew,R,120|Albion|Melbourne|Victoria|Australia,14-04-2004,false
