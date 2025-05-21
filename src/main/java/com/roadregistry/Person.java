@@ -19,7 +19,6 @@ public class Person {
     private String lastName;
     private String address;
     private String birthdate;
-    private final int demeritPoints;
     private final boolean isSuspended;
 
     public Person(String id, String firstName, String lastName, String address, String birthdate) {
@@ -28,7 +27,6 @@ public class Person {
         this.lastName = lastName;
         this.address = address;
         this.birthdate = birthdate;
-        this.demeritPoints = 0; //default value
         this.isSuspended = false;
     }
 
@@ -120,7 +118,7 @@ public class Person {
 
         // Save to file
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
-            writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + demeritPoints + "," + isSuspended + "\n");
+            writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + isSuspended + "\n");
             System.out.println("✅ Person added successfully.");
         } catch (IOException e) {
             System.out.println("❌ Error writing to file: " + e.getMessage());
@@ -284,7 +282,7 @@ public class Person {
 
                 // Write the updated record
                 writer.write(newId + "," + newFirstName + "," + newLastName + "," + newAddress + "," +
-                        newBirthdate + "," + demeritPoints + "," + isSuspended + "\n");
+                        newBirthdate + "," + isSuspended + "\n");
             }
 
             if (!found) {
