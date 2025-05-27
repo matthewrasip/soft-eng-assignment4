@@ -1,0 +1,11 @@
+name: GitHub Actions 
+run-name: Assignment action demonstration
+on: [push]
+jobs:
+  Demonstration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Starting demo for addPerson"
+        run: |
+              "1"
+              
