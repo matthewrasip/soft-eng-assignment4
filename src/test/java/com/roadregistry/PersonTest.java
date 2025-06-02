@@ -26,7 +26,7 @@ public class PersonTest {
     }
 
     /**
-     * Helper method to simulate adding a person directly (bypassing Scanner input).
+     * Helper method to simulate adding a person directly.
      */
     private boolean simulateAddPerson(String id, String firstName, String lastName,
                                       String streetNumber, String streetName,
@@ -36,6 +36,33 @@ public class PersonTest {
                 streetNumber, streetName, city, state, country, birthdate);
     }
 
+    /**
+     * Helper method to simulate updating a person's details directly in the file for testing purposes.
+     */
+    private void simulateUpdatePerson(String originalId, String updatedLine) throws IOException {
+        File inputFile = new File(TEST_FILE);
+        File tempFile = new File("temp_test_persons.txt");
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith(originalId + ",")) {
+                    writer.write(updatedLine + "\n");
+                } else {
+                    writer.write(line + "\n");
+                }
+            }
+        }
+
+        if (!inputFile.delete()) {
+            System.out.println("❌ Could not delete original test file.");
+        }
+        if (!tempFile.renameTo(inputFile)) {
+            System.out.println("❌ Could not rename temp test file.");
+        }
+    }
     // ================== addPerson() TEST CASES ==================
 
     @Test
