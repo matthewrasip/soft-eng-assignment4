@@ -1,0 +1,7 @@
+23!!!!!!AH,Test,User,120|Main|City|Victoria|Australia,15-03-2004,0,false
+22!!!!!!AB,Matthew,R,120|Albion|Melbourne|Victoria|Australia,14-04-2004,0,false
+44$$$$$$CD,Test,User,120|Main|City|Victoria|Australia,01-01-2000,0,false
+22!!$!@!AB,Matt,R,120|Albion|Melbourne|Victoria|Australia,14-04-2004,0,false
+23!!!!!!AF,Test,User,120|Main|City|Victoria|Australia,14-06-2010,0,false
+23!!!!!!AG,Test,User,120|Main|City|Victoria|Australia,15-03-2005,0,false
+33%%%%%%EF,Test,User,120|Main|City|Victoria|Australia,01-01-2000,0,false

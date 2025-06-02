@@ -13,6 +13,7 @@ import java.util.Scanner;
  * Supports adding new person records, updating personal details,
  * and adding demerit points using a text file for storage.
  */
+// runMode 0 = Normal run. runMode 1 = Test mode
 public class Person {
     private String id;
     private String firstName;
@@ -34,95 +35,88 @@ public class Person {
      * Appends a person's record to persons.txt file.
      */
     public void addPerson() {
-        try{
-            Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
-            // Person ID
-            while (true) {
-                System.out.print("Enter person ID (10 characters, special format required): ");
-                this.id = scanner.nextLine().trim();
-                if (isValidId(id)) break;
-                System.out.println("❌ Invalid ID format.\n\tRules:\n\t- Exactly 10 characters long.\n\t- The first two characters must be digits between 2 and 9.\n\t- Characters 3 to 8 must include at least 2 special characters.\n\t- The last two characters must be uppercase English letters (A–Z).\n");
-            }
-
-            // First Name
-            while (true) {
-                System.out.print("Enter first name: ");
-                this.firstName = scanner.nextLine().trim();
-                if (firstName.matches("[A-Za-z]+")) break;
-                System.out.println("❌ Invalid first name. Only letters allowed.");
-            }
-
-            // Last Name
-            while (true) {
-                System.out.print("Enter last name: ");
-                this.lastName = scanner.nextLine().trim();
-                if (lastName.matches("[A-Za-z]+")) break;
-                System.out.println("❌ Invalid last name. Only letters allowed.");
-            }
-
-            // Street Number (e.g., 32)
-            String streetNumber;
-            while (true) {
-                System.out.print("Enter street number: ");
-                streetNumber = scanner.nextLine().trim();
-                if (streetNumber.matches("\\d+")) break;
-                System.out.println("❌ Invalid street number. Only digits allowed.");
-            }
-
-            // Street Name (e.g., Highland Street)
-            String streetName;
-            while (true) {
-                System.out.print("Enter street name: ");
-                streetName = scanner.nextLine().trim();
-                if (streetName.matches("[A-Za-z ]+")) break;
-                System.out.println("❌ Invalid street name. Only letters and spaces allowed.");
-            }
-
-            // City (e.g., Melbourne)
-            String city;
-            while (true) {
-                System.out.print("Enter city: ");
-                city = scanner.nextLine().trim();
-                if (city.matches("[A-Za-z ]+")) break;
-                System.out.println("❌ Invalid city. Only letters and spaces allowed.");
-            }
-
-            // State (must be Victoria)
-            String state;
-            while (true) {
-                System.out.print("Enter state (must be Victoria): ");
-                state = scanner.nextLine().trim();
-                if (state.equalsIgnoreCase("Victoria")) break;
-                System.out.println("❌ State must be Victoria.");
-            }
-
-            // Country (e.g., Australia)
-            String country;
-            while (true) {
-                System.out.print("Enter country: ");
-                country = scanner.nextLine().trim();
-                if (country.matches("[A-Za-z ]+")) break;
-                System.out.println("❌ Invalid country. Only letters and spaces allowed.");
-            }
-
-            // Combine address
-            this.address = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
-
-            // Birthdate (DD-MM-YYYY)
-            while (true) {
-                System.out.print("Enter birthdate (DD-MM-YYYY): ");
-                this.birthdate = scanner.nextLine().trim();
-                if (isValidBirthdate(birthdate)) break;
-                System.out.println("❌ Invalid birthdate format. Must be DD-MM-YYYY.");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        // Person ID
+        while (true) {
+            System.out.print("Enter person ID (10 characters, special format required): ");
+            this.id = scanner.nextLine().trim();
+            if (isValidId("persons.txt", id)) break;
+            System.out.println("❌ Invalid ID format.\n\tRules:\n\t- ID must not be duplicate.\n\t- Exactly 10 characters long.\n\t- The first two characters must be digits between 2 and 9.\n\t- Characters 3 to 8 must include at least 2 special characters.\n\t- The last two characters must be uppercase English letters (A–Z).\n");
         }
 
+        // First Name
+        while (true) {
+            System.out.print("Enter first name: ");
+            this.firstName = scanner.nextLine().trim();
+            if (firstName.matches("[A-Za-z]+")) break;
+            System.out.println("❌ Invalid first name. Only letters allowed.");
+        }
 
+        // Last Name
+        while (true) {
+            System.out.print("Enter last name: ");
+            this.lastName = scanner.nextLine().trim();
+            if (lastName.matches("[A-Za-z]+")) break;
+            System.out.println("❌ Invalid last name. Only letters allowed.");
+        }
 
-        // Save to file
+        // Street Number (e.g., 32)
+        String streetNumber;
+        while (true) {
+            System.out.print("Enter street number: ");
+            streetNumber = scanner.nextLine().trim();
+            if (streetNumber.matches("\\d+")) break;
+            System.out.println("❌ Invalid street number. Only digits allowed.");
+        }
+
+        // Street Name (e.g., Highland Street)
+        String streetName;
+        while (true) {
+            System.out.print("Enter street name: ");
+            streetName = scanner.nextLine().trim();
+            if (streetName.matches("[A-Za-z ]+")) break;
+            System.out.println("❌ Invalid street name. Only letters and spaces allowed.");
+        }
+
+        // City (e.g., Melbourne)
+        String city;
+        while (true) {
+            System.out.print("Enter city: ");
+            city = scanner.nextLine().trim();
+            if (city.matches("[A-Za-z ]+")) break;
+            System.out.println("❌ Invalid city. Only letters and spaces allowed.");
+        }
+
+        // State (must be Victoria)
+        String state;
+        while (true) {
+            System.out.print("Enter state (must be Victoria): ");
+            state = scanner.nextLine().trim();
+            if (state.equalsIgnoreCase("Victoria")) break;
+            System.out.println("❌ State must be Victoria.");
+        }
+
+        // Country (e.g., Australia)
+        String country;
+        while (true) {
+            System.out.print("Enter country: ");
+            country = scanner.nextLine().trim();
+            if (country.matches("[A-Za-z ]+")) break;
+            System.out.println("❌ Invalid country. Only letters and spaces allowed.");
+        }
+
+        // Combine address
+        this.address = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
+
+        // Birthdate (DD-MM-YYYY)
+        while (true) {
+            System.out.print("Enter birthdate (DD-MM-YYYY): ");
+            this.birthdate = scanner.nextLine().trim();
+            if (isValidBirthdate(birthdate)) break;
+            System.out.println("❌ Invalid birthdate format. Must be DD-MM-YYYY.");
+        }
+
         try (FileWriter writer = new FileWriter("persons.txt", true)) {
             writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + "," + isSuspended + "\n");
             System.out.println("✅ Person added successfully.");
@@ -195,7 +189,7 @@ public class Person {
                     input = scanner.nextLine().trim();
 
                     if (!input.isEmpty()) {
-                        if (isValidId(input)) {
+                        if (isValidId("persons.txt", input)) {
                             newId = input;
                             hasOtherChanges = true;
                         } else {
@@ -459,7 +453,7 @@ public class Person {
         }
     }
 
-    private boolean isValidId(String id) {
+    private boolean isValidId(String FILE, String id) {
         if (id.length() != 10) return false;
 
         // Check first 2 characters: digits between 2–9
@@ -482,7 +476,7 @@ public class Person {
         if (specialCount < 2) return false;
 
         // Check for duplicate ID in persons.txt
-        File file = new File("persons.txt");
+        File file = new File(FILE);
         if (file.exists()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
@@ -527,9 +521,16 @@ public class Person {
      * Adds a person record directly using given parameters, bypassing user input.
      * For testing purposes only.
      */
-    public boolean addPersonDirect(String id, String firstName, String lastName, String streetNumber,
+    public boolean addPersonDirect(int runMode, String id, String firstName, String lastName, String streetNumber,
                                    String streetName, String city, String state, String country, String birthdate) {
-        if (!isValidId(id)) return false;
+        String FILE = "";
+
+        if (runMode == 0) {
+            FILE = "persons.txt";
+        } else if (runMode == 1) {
+            FILE = "persons_test.txt";
+        }
+        if (!isValidId(FILE, id)) return false;
         if (!firstName.matches("[A-Za-z]+")) return false;
         if (!lastName.matches("[A-Za-z]+")) return false;
         if (!streetNumber.matches("\\d+")) return false;
@@ -540,8 +541,7 @@ public class Person {
         if (!isValidBirthdate(birthdate)) return false;
 
         String address = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
-
-        try (FileWriter writer = new FileWriter("persons.txt", true)) {
+        try (FileWriter writer = new FileWriter(FILE, true)) {
             writer.write(id + "," + firstName + "," + lastName + "," + address + "," + birthdate + ",0,false\n");
             return true;
         } catch (IOException e) {
