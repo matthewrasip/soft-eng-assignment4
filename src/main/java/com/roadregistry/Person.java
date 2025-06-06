@@ -129,7 +129,7 @@ public class Person {
      * Updates the personal details (name and age) of a person by ID.
      * Reads from "persons.txt", updates the matching line, and writes it back.
      */
-    public void updatePersonalDetails() {
+    public void updatePersonDetails() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the ID of the person you want to update: ");
         String targetId = scanner.nextLine().trim();

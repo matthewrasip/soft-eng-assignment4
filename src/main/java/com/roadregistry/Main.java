@@ -21,7 +21,7 @@ public class Main {
                     person.addPerson();
                     break;
                 case "2":
-                    person.updatePersonalDetails();
+                    person.updatePersonDetails();
                     break;
                 case "3":
                     person.addDemeritPoints();

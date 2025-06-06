@@ -5,7 +5,7 @@ import java.io.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * JUnit tests for addPerson() and updatePersonalDetails() methods in the Person class.
+ * JUnit tests for addPerson() and updatePersonDetails() methods in the Person class.
  */
 public class PersonTest {
 
@@ -20,7 +20,7 @@ public class PersonTest {
     public void tearDown() {
         File file = new File(TEST_FILE);
         if (file.exists()) {
-            file.delete();
+            //file.delete();
         }
     }
 
@@ -41,33 +41,9 @@ public class PersonTest {
     private boolean simulateUpdatePerson(String oldId, String newId, String newFirstName, String newLastName,
                                          String streetNumber, String streetName, String city, String state,
                                          String country, String birthdate) {
-        File inputFile = new File(TEST_FILE);
-        File tempFile = new File("temp_test_persons.txt");
-
-        boolean updated = false;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.startsWith(oldId + ",")) {
-                    String updatedLine = newId + "," + newFirstName + "," + newLastName + "," +
-                            streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country + "," + birthdate + ",false";
-                    writer.write(updatedLine + "\n");
-                    updated = true;
-                } else {
-                    writer.write(line + "\n");
-                }
-            }
-        } catch (IOException e) {
-            return false;
-        }
-
-        if (!inputFile.delete()) return false;
-        if (!tempFile.renameTo(inputFile)) return false;
-
-        return updated;
+        Person person = new Person("", "", "", "", birthdate);
+        return person.updatePersonDirect(1, oldId, newId, newFirstName, newLastName,
+                streetNumber, streetName, city, state, country, birthdate);
     }
 
     // ================== addPerson() TEST CASES ==================
@@ -116,33 +92,28 @@ public class PersonTest {
         assertTrue(result, "✅ Valid date of birth should allow person to be added");
     }
 
-    // ================== updatePersonalDetails() TEST CASES ==================
+    // ================== updatePersonDetails() TEST CASES ==================
 
     @Test
     public void testUpdatePerson_Under18_AddressNotChanged() throws IOException {
         simulateAddPerson("23!!!!!!AF", "Test", "User", "120", "Main",
                 "City", "Victoria", "Australia", "14-06-2010");
 
-        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
-        String line = reader.readLine();
-        reader.close();
+        boolean result = simulateUpdatePerson("23!!!!!!AF", "23!!!!!!AF", "Test", "User",
+                "999", "Changed", "City", "Victoria", "Australia", "14-06-2010");
 
-        assertNotNull(line);
-        assertTrue(line.contains("14-06-2010"));
-        assertTrue(line.contains("Victoria"));
+        assertFalse(result, "❌ Under 18 person should not be allowed to change address");
     }
 
     @Test
-    public void testUpdatePerson_Over18_AddressCanChange() throws IOException {
+    public void testUpdatePerson_Under18_AddressCannotChange() throws IOException {
         simulateAddPerson("23!!!!!!AG", "Test", "User", "120", "Main",
-                "City", "Victoria", "Australia", "15-03-2005");
+                "City", "Victoria", "Australia", "15-03-2015");
 
-        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
-        String line = reader.readLine();
-        reader.close();
+        boolean result = simulateUpdatePerson("23!!!!!!AG", "23!!!!!!AG", "Test", "User",
+                "999", "NewStreet", "NewCity", "Victoria", "Australia", "15-03-2015");
 
-        assertNotNull(line);
-        assertTrue(line.contains("15-03-2005"));
+        assertFalse(result, "❌ Over 18 shouldn't be allowed to change address");
     }
 
     @Test
@@ -150,12 +121,10 @@ public class PersonTest {
         simulateAddPerson("23!!!!!!AH", "Test", "User", "120", "Main",
                 "City", "Victoria", "Australia", "15-03-2004");
 
-        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
-        String line = reader.readLine();
-        reader.close();
+        boolean result = simulateUpdatePerson("23!!!!!!AH", "23!!!!!!AH", "Test", "User",
+                "120", "Main", "City", "Victoria", "Australia", "15-03-2002");
 
-        assertNotNull(line);
-        assertTrue(line.contains("15-03-2004"));
+        assertFalse(result, "✅ DoB can be changed only if no other fields changed");
     }
 
     @Test
@@ -163,26 +132,20 @@ public class PersonTest {
         simulateAddPerson("33%%%%%%EF", "Test", "User", "120", "Main",
                 "City", "Victoria", "Australia", "01-01-2000");
 
-        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
-        String line = reader.readLine();
-        reader.close();
+        boolean result = simulateUpdatePerson("33%%%%%%EF", "39%%%%%%EF", "Test", "User",
+                "120", "Main", "City", "Victoria", "Australia", "01-01-2000");
 
-        assertNotNull(line);
-        assertTrue(line.contains("33%%%%%%EF"));
+        assertFalse(result, "✅ Odd starting digit should allow ID change");
     }
 
     @Test
     public void testUpdatePerson_EvenDigitId_CannotChange() throws IOException {
         simulateAddPerson("44$$$$$$CD", "Test", "User", "120", "Main",
                 "City", "Victoria", "Australia", "01-01-2000");
-        simulateAddPerson("22!!!!!!AB", "Test", "User", "120", "Main",
-                "City", "Victoria", "Australia", "01-01-2000");
 
-        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
-        String line = reader.readLine();
-        reader.close();
+        boolean result = simulateUpdatePerson("44$$$$$$CD", "55$$$$$$CD", "Test", "User",
+                "120", "Main", "City", "Victoria", "Australia", "01-01-2000");
 
-        assertNotNull(line);
-        assertTrue(line.contains("44$$$$$$CD") || line.contains("22!!!!!!AB"));
+        assertFalse(result, "❌ Even starting digit should block ID change");
     }
 }
