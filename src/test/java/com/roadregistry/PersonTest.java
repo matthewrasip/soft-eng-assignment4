@@ -148,4 +148,96 @@ public class PersonTest {
 
         assertFalse(result, "❌ Even starting digit should block ID change");
     }
+
+    // ================== addDemeritPoints() TEST CASES ==================
+
+    @Test
+    public void testAddDemeritPoints_TooHighInput() throws IOException {
+        simulateAddPerson("66%%%%%%AA", "Demo", "User", "100", "High",
+                "City", "State", "Country", "12-03-2002");
+        Person person = new Person("66%%%%%%AA", "Demo", "User", "", "12-03-2002");
+        boolean result = person.addDemeritPoints("66%%%%%%AA", 7);
+        assertFalse(result, "❌ Input > 6 not accepted at once");
+    }
+
+    @Test
+    public void testAddDemeritPoints_ZeroInput() throws IOException {
+        simulateAddPerson("66%%%%%%BB", "Demo", "User", "100", "High",
+                "City", "State", "Country", "12-03-2002");
+        Person person = new Person("66%%%%%%BB", "Demo", "User", "", "12-03-2002");
+        boolean result = person.addDemeritPoints("66%%%%%%BB", 0);
+        assertFalse(result, "❌ Input < 1 not accepted");
+    }
+
+    @Test
+    public void testAddDemeritPoints_Over21_AccumulatedOver12_Suspended() throws IOException {
+        String id = "66%%%%%%CC";
+        simulateAddPerson(id, "Demo", "User", "100", "High",
+                "City", "State", "Country", "21-07-1991");
+        Person person = new Person(id, "Demo", "User", "", "21-07-1991");
+
+        assertTrue(person.addDemeritPoints(id, 6));
+        assertTrue(person.addDemeritPoints(id, 6));
+
+        // Now add 4 more (total = 16)
+        assertTrue(person.addDemeritPoints(id, 4));
+
+        // Check if suspended
+        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
+        String line;
+        boolean found = false;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith(id)) {
+                assertTrue(line.endsWith("true"), "✅ isSuspended should be true");
+                found = true;
+            }
+        }
+        reader.close();
+        assertTrue(found, "✅ Person should be found in the file");
+    }
+
+    @Test
+    public void testAddDemeritPoints_Under21_AccumulatedOver6_Suspended() throws IOException {
+        String id = "66%%%%%%DD";
+        simulateAddPerson(id, "Young", "Driver", "50", "Youth",
+                "City", "State", "Country", "20-06-2011");
+        Person person = new Person(id, "Young", "Driver", "", "20-06-2011");
+
+        assertTrue(person.addDemeritPoints(id, 6));
+        assertTrue(person.addDemeritPoints(id, 1));  // Total: 7 (Over limit)
+
+        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
+        String line;
+        boolean found = false;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith(id)) {
+                assertTrue(line.endsWith("true"), "✅ isSuspended should be true for under 21 with >6 points");
+                found = true;
+            }
+        }
+        reader.close();
+        assertTrue(found, "✅ Person should be found in file");
+    }
+
+    @Test
+    public void testAddDemeritPoints_Under21_LessThan6_NotSuspended() throws IOException {
+        String id = "66%%%%%%EE";
+        simulateAddPerson(id, "Safe", "Teen", "50", "Lane",
+                "City", "State", "Country", "14-05-2010");
+        Person person = new Person(id, "Safe", "Teen", "", "14-05-2010");
+
+        assertTrue(person.addDemeritPoints(id, 4));  // Safe
+
+        BufferedReader reader = new BufferedReader(new FileReader(TEST_FILE));
+        String line;
+        boolean found = false;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith(id)) {
+                assertTrue(line.endsWith("false"), "✅ isSuspended should be false for <6 points");
+                found = true;
+            }
+        }
+        reader.close();
+        assertTrue(found, "✅ Person should be found in file");
+    }
 }
