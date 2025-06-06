@@ -146,7 +146,8 @@ public class Person {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] fields = line.split(",");
+                String[] fields;
+                fields = line.split(",");
                 if (fields.length != 6) {
                     writer.write(line + "\n");
                     continue;
@@ -382,17 +383,7 @@ public class Person {
         LocalDate twoYearsAgo = LocalDate.now().minusYears(2);
 
         try (BufferedReader offenseReader = new BufferedReader(new FileReader(offenseFile))) {
-            String line;
-            while ((line = offenseReader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length != 3) continue;
-                if (!parts[0].equals(personId)) continue;
-
-                LocalDate date = LocalDate.parse(parts[1], formatter);
-                if (!date.isBefore(twoYearsAgo)) {
-                    recentTotal += Integer.parseInt(parts[2]);
-                }
-            }
+            recentTotal = getRecentTotal(personId, formatter, recentTotal, twoYearsAgo, offenseReader);
         } catch (IOException | NumberFormatException | DateTimeParseException e) {
             System.out.println("❌ Error reading offense history.");
             return;
@@ -451,6 +442,21 @@ public class Person {
             }
             System.out.println("❌ Update failed.");
         }
+    }
+
+    private int getRecentTotal(String personId, DateTimeFormatter formatter, int recentTotal, LocalDate twoYearsAgo, BufferedReader offenseReader) throws IOException {
+        String line;
+        while ((line = offenseReader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length != 3) continue;
+            if (!parts[0].equals(personId)) continue;
+
+            LocalDate date = LocalDate.parse(parts[1], formatter);
+            if (!date.isBefore(twoYearsAgo)) {
+                recentTotal += Integer.parseInt(parts[2]);
+            }
+        }
+        return recentTotal;
     }
 
     private boolean isValidId(String FILE, String id) {
@@ -561,9 +567,8 @@ public class Person {
         File tempFile = new File("temp_" + FILE);
 
         boolean found = false;
-        boolean updated = false;
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
              BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
@@ -610,7 +615,6 @@ public class Person {
 
                 writer.write(newId + "," + newFirstName + "," + newLastName + "," +
                         newAddress + "," + newBirthdate + "," + isSuspended + "\n");
-                updated = true;
             }
         } catch (IOException e) {
             return false;
@@ -618,8 +622,7 @@ public class Person {
 
         if (!found) return false;
         if (!inputFile.delete()) return false;
-        if (!tempFile.renameTo(inputFile)) return false;
-        return updated;
+        return tempFile.renameTo(inputFile);
     }
 
     public boolean addDemeritsDirect(int runMode, String personId, String offenseDateStr, int pointsToAdd) {
@@ -666,17 +669,7 @@ public class Person {
         LocalDate twoYearsAgo = LocalDate.now().minusYears(2);
 
         try (BufferedReader offenseReader = new BufferedReader(new FileReader(offenseData))) {
-            String line;
-            while ((line = offenseReader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length != 3) continue;
-                if (!parts[0].equals(personId)) continue;
-
-                LocalDate date = LocalDate.parse(parts[1], formatter);
-                if (!date.isBefore(twoYearsAgo)) {
-                    recentTotal += Integer.parseInt(parts[2]);
-                }
-            }
+            recentTotal = getRecentTotal(personId, formatter, recentTotal, twoYearsAgo, offenseReader);
         } catch (IOException | NumberFormatException | DateTimeParseException e) {
             return false;
         }
@@ -693,7 +686,6 @@ public class Person {
         }
 
         File tempFile = new File("temp_" + personFile);
-        boolean updated = false;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
              BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
@@ -704,7 +696,6 @@ public class Person {
                 if (rec.length == 6 && rec[0].equals(personId)) {
                     rec[5] = String.valueOf(suspended);
                     writer.write(String.join(",", rec) + "\n");
-                    updated = true;
                 } else {
                     writer.write(line + "\n");
                 }
@@ -715,8 +706,7 @@ public class Person {
         }
 
         if (!inputFile.delete()) return false;
-        if (!tempFile.renameTo(inputFile)) return false;
 
-        return true;
+        return tempFile.renameTo(inputFile);
     }
 }
