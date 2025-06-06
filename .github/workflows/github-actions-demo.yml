@@ -1,6 +1,11 @@
 name: GitHub Actions Java test workflow # Workflow name
 run-name: Running tests on github actions
-on: [push] # Trigger the workflow on push events
+on: # Trigger the workflow on push events
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
 jobs:
   java-test: # Job name
     runs-on: ubuntu-latest # Configures the job to run on the latest version of an Ubuntu Linux runner.
