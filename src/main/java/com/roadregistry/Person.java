@@ -621,4 +621,102 @@ public class Person {
         if (!tempFile.renameTo(inputFile)) return false;
         return updated;
     }
+
+    public boolean addDemeritsDirect(int runMode, String personId, String offenseDateStr, int pointsToAdd) {
+        String personFile = runMode == 0 ? "persons.txt" : "persons_test.txt";
+        String offenseFile = runMode == 0 ? "offenses.txt" : "offenses_test.txt";
+
+        File inputFile = new File(personFile);
+        File offenseData = new File(offenseFile);
+        String matchedLine = null;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                if (fields.length == 6 && fields[0].equals(personId)) {
+                    matchedLine = line;
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            return false;
+        }
+
+        if (matchedLine == null) return false;
+
+        String[] fields = matchedLine.split(",");
+        String birthdate = fields[4];
+        boolean suspended = Boolean.parseBoolean(fields[5]);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birth = LocalDate.parse(birthdate, formatter);
+        LocalDate offenseDate;
+
+        try {
+            offenseDate = LocalDate.parse(offenseDateStr, formatter);
+            if (offenseDate.isAfter(LocalDate.now()) || offenseDate.isBefore(birth)) return false;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+
+        if (pointsToAdd < 1 || pointsToAdd > 6) return false;
+
+        int recentTotal = pointsToAdd;
+        LocalDate twoYearsAgo = LocalDate.now().minusYears(2);
+
+        try (BufferedReader offenseReader = new BufferedReader(new FileReader(offenseData))) {
+            String line;
+            while ((line = offenseReader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length != 3) continue;
+                if (!parts[0].equals(personId)) continue;
+
+                LocalDate date = LocalDate.parse(parts[1], formatter);
+                if (!date.isBefore(twoYearsAgo)) {
+                    recentTotal += Integer.parseInt(parts[2]);
+                }
+            }
+        } catch (IOException | NumberFormatException | DateTimeParseException e) {
+            return false;
+        }
+
+        try (FileWriter offenseWriter = new FileWriter(offenseFile, true)) {
+            offenseWriter.write(personId + "," + offenseDateStr + "," + pointsToAdd + "\n");
+        } catch (IOException e) {
+            return false;
+        }
+
+        int age = Period.between(birth, LocalDate.now()).getYears();
+        if ((age < 21 && recentTotal > 6) || (age >= 21 && recentTotal > 12)) {
+            suspended = true;
+        }
+
+        File tempFile = new File("temp_" + personFile);
+        boolean updated = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] rec = line.split(",");
+                if (rec.length == 6 && rec[0].equals(personId)) {
+                    rec[5] = String.valueOf(suspended);
+                    writer.write(String.join(",", rec) + "\n");
+                    updated = true;
+                } else {
+                    writer.write(line + "\n");
+                }
+            }
+
+        } catch (IOException e) {
+            return false;
+        }
+
+        if (!inputFile.delete()) return false;
+        if (!tempFile.renameTo(inputFile)) return false;
+
+        return true;
+    }
 }
