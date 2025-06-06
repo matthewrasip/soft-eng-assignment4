@@ -5,15 +5,14 @@ import java.io.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * JUnit tests for addPerson() method in the Person class.
+ * JUnit tests for addPerson() and updatePersonalDetails() methods in the Person class.
  */
 public class PersonTest {
 
-    private static final String TEST_FILE = "persons_test.txt"; // Make sure test uses same file or redirect path
+    private static final String TEST_FILE = "persons_test.txt";
 
     @BeforeEach
     public void setUp() throws IOException {
-        // Clear the test file before each test
         new FileWriter(TEST_FILE, false).close();
     }
 
@@ -21,7 +20,7 @@ public class PersonTest {
     public void tearDown() {
         File file = new File(TEST_FILE);
         if (file.exists()) {
-            //file.delete();
+            file.delete();
         }
     }
 
@@ -37,32 +36,40 @@ public class PersonTest {
     }
 
     /**
-     * Helper method to simulate updating a person's details directly in the file for testing purposes.
+     * Helper method to simulate updating a person's record directly for testing.
      */
-    private void simulateUpdatePerson(String originalId, String updatedLine) throws IOException {
+    private boolean simulateUpdatePerson(String oldId, String newId, String newFirstName, String newLastName,
+                                         String streetNumber, String streetName, String city, String state,
+                                         String country, String birthdate) {
         File inputFile = new File(TEST_FILE);
         File tempFile = new File("temp_test_persons.txt");
+
+        boolean updated = false;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
              BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.startsWith(originalId + ",")) {
+                if (line.startsWith(oldId + ",")) {
+                    String updatedLine = newId + "," + newFirstName + "," + newLastName + "," +
+                            streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country + "," + birthdate + ",false";
                     writer.write(updatedLine + "\n");
+                    updated = true;
                 } else {
                     writer.write(line + "\n");
                 }
             }
+        } catch (IOException e) {
+            return false;
         }
 
-        if (!inputFile.delete()) {
-            System.out.println("❌ Could not delete original test file.");
-        }
-        if (!tempFile.renameTo(inputFile)) {
-            System.out.println("❌ Could not rename temp test file.");
-        }
+        if (!inputFile.delete()) return false;
+        if (!tempFile.renameTo(inputFile)) return false;
+
+        return updated;
     }
+
     // ================== addPerson() TEST CASES ==================
 
     @Test
@@ -74,9 +81,9 @@ public class PersonTest {
 
     @Test
     public void testAddPerson_DuplicateId() {
-        boolean result = simulateAddPerson("22!!$!@!AB", "Matt", "R", "120", "Albion",
+        simulateAddPerson("22!!$!@!AB", "Matt", "R", "120", "Albion",
                 "Melbourne", "Victoria", "Australia", "14-04-2004");
-        result = simulateAddPerson("22!!$!@!AB", "Matthew", "R", "120", "Albion",
+        boolean result = simulateAddPerson("22!!$!@!AB", "Matthew", "R", "120", "Albion",
                 "Melbourne", "Victoria", "Australia", "14-04-2004");
         assertFalse(result, "❌ Duplicate ID found, person not added");
     }
@@ -110,6 +117,7 @@ public class PersonTest {
     }
 
     // ================== updatePersonalDetails() TEST CASES ==================
+
     @Test
     public void testUpdatePerson_Under18_AddressNotChanged() throws IOException {
         simulateAddPerson("23!!!!!!AF", "Test", "User", "120", "Main",
@@ -123,7 +131,6 @@ public class PersonTest {
         assertTrue(line.contains("14-06-2010"));
         assertTrue(line.contains("Victoria"));
     }
-
 
     @Test
     public void testUpdatePerson_Over18_AddressCanChange() throws IOException {

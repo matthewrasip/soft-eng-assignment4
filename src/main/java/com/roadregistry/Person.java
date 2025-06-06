@@ -548,4 +548,77 @@ public class Person {
             return false;
         }
     }
+
+    /**
+     * Updates a person's details directly using given parameters (for testing purposes only).
+     * Only updates the matching person ID. Applies same rules as interactive function.
+     */
+    public boolean updatePersonDirect(int runMode, String targetId, String newId, String newFirstName, String newLastName,
+                                      String streetNumber, String streetName, String city, String state,
+                                      String country, String newBirthdate) {
+        String FILE = (runMode == 0) ? "persons.txt" : "persons_test.txt";
+        File inputFile = new File(FILE);
+        File tempFile = new File("temp_" + FILE);
+
+        boolean found = false;
+        boolean updated = false;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(",");
+                if (fields.length != 6) {
+                    writer.write(line + "\n");
+                    continue;
+                }
+
+                if (!fields[0].equals(targetId)) {
+                    writer.write(line + "\n");
+                    continue;
+                }
+
+                found = true;
+                String originalId = fields[0];
+                String originalFirstName = fields[1];
+                String originalLastName = fields[2];
+                String originalAddress = fields[3];
+                String originalBirthdate = fields[4];
+                String isSuspended = fields[5];
+
+                // === Conditions ===
+                if (!newId.equals(originalId)) {
+                    char firstDigit = originalId.charAt(0);
+                    if (Character.isDigit(firstDigit) && (firstDigit - '0') % 2 == 0) return false;
+                    if (!isValidId(FILE, newId)) return false;
+                }
+
+                int age = getAgeFromBirthdate(originalBirthdate);
+
+                String newAddress = streetNumber + "|" + streetName + "|" + city + "|" + state + "|" + country;
+                if (age < 18 && !newAddress.equals(originalAddress)) return false;
+
+                boolean otherFieldsChanged = !newId.equals(originalId) ||
+                        !newFirstName.equals(originalFirstName) ||
+                        !newLastName.equals(originalLastName) ||
+                        !newAddress.equals(originalAddress);
+
+                if (!newBirthdate.equals(originalBirthdate) && otherFieldsChanged) return false;
+
+                writer.write(newId + "," + newFirstName + "," + newLastName + "," +
+                        newAddress + "," + newBirthdate + "," + isSuspended + "\n");
+                updated = true;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+
+        if (!found) return false;
+        if (!inputFile.delete()) return false;
+        if (!tempFile.renameTo(inputFile)) return false;
+        return updated;
+    }
 }
