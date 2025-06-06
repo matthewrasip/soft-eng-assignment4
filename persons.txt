@@ -8,3 +8,4 @@ id,firstName,lastName,address,birthdate,isSuspended
 34234#$3BD,Gursewak,Gaur,23|Fern|Melton|Victoria|Australia,14-09-2003,false
 34%%%%%%CD,Smith,Johnny,77|Hadfield|Melbourne|Victoria|Australia,28-05-2013,false
 66^^^^^^CD,Matthew,Rasipp,77|Hudson|Melbourne|Victoria|Australia,15-03-2006,false
+77&&&&&&EF,Michael,Rasip,90|John|Melbourne|Victoria|Australia,23-04-2004,false
